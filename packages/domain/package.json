@@ -1,0 +1,13 @@
+{
+  "name": "@jancube/domain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure business rules for 雀CUBE. No framework, database or SDK dependencies.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}

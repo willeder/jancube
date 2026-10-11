@@ -1,0 +1,21 @@
+{
+  "name": "@jancube/jobs",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker for scheduled batches and queue consumers. Calls application use cases only.",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "typecheck": "wrangler types && tsc -p tsconfig.json",
+    "cf-typegen": "wrangler types",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@jancube/application": "workspace:*",
+    "@jancube/domain": "workspace:*",
+    "@jancube/infrastructure": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2",
+    "wrangler": "^4.70.0"
+  }
+}

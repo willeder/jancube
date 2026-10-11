@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jancube-jobs",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "triggers": {
+    // Cron times are UTC. Final times depend on open questions (day-before notice time: CQ-68).
+    "crons": [
+      "* * * * *", // every minute: release expired holds, due lock jobs
+      "0 9 * * *" // 18:00 JST: day-before batch (assign rooms → cleaning plan → codes → notify)
+    ]
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "00000000000000000000000000000000",
+      "localConnectionString": "mysql://root:jancube@127.0.0.1:3306/jancube"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@jancube/infrastructure",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Adapters that implement application ports: database (Kysely/MySQL-compatible), SMS, email.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@jancube/application": "workspace:*",
+    "@jancube/domain": "workspace:*",
+    "kysely": "^0.29.6",
+    "mysql2": "^3.24.5"
+  }
+}

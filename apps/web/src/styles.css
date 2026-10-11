@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* Tokens from the Figma wireframes / ActPro prototype v0.6 (:root). */
+@theme {
+  --font-sans: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
+  --color-brand: #007140;
+  --color-brand-dark: #00502e;
+  --color-brand-pale: #e6f1eb;
+  --color-gold: #e8c240;
+  --color-gold-pale: #fbf4da;
+  --color-alert: #d84848;
+  --color-alert-pale: #fbecea;
+  --color-ink: #22262a;
+  --color-sub: #6b7076;
+  --color-line: #e4e2dc;
+  --color-paper: #fbfbf9;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}

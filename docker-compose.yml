@@ -1,0 +1,34 @@
+# Local development databases.
+#   mysql : day-to-day development (MySQL 8.4, same schema as production)
+#   tidb  : compatibility check against TiDB (production DB is TiDB Cloud Starter)
+name: jancube
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: jancube
+      MYSQL_DATABASE: jancube
+      TZ: UTC
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+00:00
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-pjancube']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  tidb:
+    image: pingcap/tidb:v8.5.7
+    ports:
+      - '4000:4000'
+    profiles: ['tidb']
+
+volumes:
+  mysql-data:

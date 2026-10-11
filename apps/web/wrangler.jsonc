@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jancube-web",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": { "enabled": true },
+  "hyperdrive": [
+    {
+      // Production: TiDB Cloud Starter (Tokyo) via Hyperdrive. Replace the id after `wrangler hyperdrive create`.
+      "binding": "HYPERDRIVE",
+      "id": "00000000000000000000000000000000",
+      // Local development: Docker MySQL from the repo root (`pnpm db:up`).
+      "localConnectionString": "mysql://root:jancube@127.0.0.1:3306/jancube"
+    }
+  ],
+  "vars": {
+    "APP_ENV": "development",
+    "EMAIL_FROM": "雀CUBE <no-reply@jancube.net>"
+  }
+}
