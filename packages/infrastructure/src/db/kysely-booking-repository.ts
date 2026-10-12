@@ -1,4 +1,5 @@
 import type {
+  BookingContact,
   BookingRepository,
   BookingStatus,
   BookingSummary,
@@ -142,6 +143,21 @@ export class KyselyBookingRepository implements BookingRepository {
     await this.db
       .updateTable('bookings')
       .set({ guest_count: guestCount })
+      .where('client_request_key', '=', requestKey)
+      .where('status', '=', 'draft')
+      .execute()
+  }
+
+  async assignMember(requestKey: string, contact: BookingContact): Promise<void> {
+    await this.db
+      .updateTable('bookings')
+      .set({
+        member_id: contact.memberId,
+        contact_family_name: contact.familyName,
+        contact_given_name: contact.givenName,
+        contact_phone_e164: contact.phone,
+        contact_email: contact.email,
+      })
       .where('client_request_key', '=', requestKey)
       .where('status', '=', 'draft')
       .execute()

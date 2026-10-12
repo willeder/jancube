@@ -71,6 +71,7 @@ function holdDeps(now = '2026-11-01T12:00:00+09:00') {
       const d = drafts.find((x) => x.requestKey === key)
       if (d) Object.assign(d, { guestCount: n })
     },
+    assignMember: async () => {},
   }
   let keys = 0
   const deps: HoldDeps = { ...base, bookings, newRequestKey: () => `key-${++keys}` }

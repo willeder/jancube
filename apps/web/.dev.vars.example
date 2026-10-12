@@ -1,0 +1,6 @@
+# Copy to .dev.vars for local overrides. In deployed environments set these with `wrangler secret put`.
+# With APP_ENV=development, built-in development values are used when these are unset.
+AUTH_PEPPER=change-me-at-least-16-characters
+SESSION_SECRET=change-me-at-least-32-characters-long
+SMSLINK_API_TOKEN=
+SMSLINK_ENDPOINT=

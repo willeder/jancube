@@ -98,6 +98,13 @@ const priceProfiles = [
   },
 ] as const
 
+const legalDocuments = [
+  { type: 'terms', title: '利用規約', url: '/legal/terms' },
+  { type: 'privacy', title: 'プライバシーポリシー', url: '/legal/privacy' },
+  { type: 'age_declaration', title: '18歳以上であることの確認', url: '/legal/terms#age' },
+  { type: 'cancellation_policy', title: 'キャンセルポリシー', url: '/legal/cancellation' },
+] as const
+
 async function main() {
   const db = await createConnection({ uri: url, timezone: 'Z' })
   const id = async (sql: string, params: unknown[]) => {
@@ -215,6 +222,17 @@ async function main() {
           [r.group === 'VIP' ? versionIds.VIP_X : versionIds.STANDARD, roomId],
         )
       }
+    }
+    // Placeholder versions until the client supplies the final texts (R-items: terms, privacy,
+    // cancellation policy). Consents reference these ids, so new texts are added as new versions.
+    for (const doc of legalDocuments) {
+      await db.query(
+        `INSERT INTO legal_documents
+           (document_type, version, title, content_url, content_sha256, published_at, effective_at)
+         VALUES (?, 'draft-1', ?, ?, UNHEX(SHA2(?, 256)), '2026-01-01 00:00:00', '2026-01-01 00:00:00')
+         ON DUPLICATE KEY UPDATE title = VALUES(title), content_url = VALUES(content_url)`,
+        [doc.type, doc.title, doc.url, `${doc.type}:draft-1`],
+      )
     }
     await db.commit()
   } catch (err) {

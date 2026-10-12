@@ -72,4 +72,14 @@ export interface BookingRepository {
   /** Ends a draft early (customer changed their selection). No-op unless it is still a draft. */
   expireDraft(requestKey: string, now: Date): Promise<void>
   setGuestCount(requestKey: string, guestCount: number): Promise<void>
+  /** Links the signed-in member to the draft and snapshots their contact details. */
+  assignMember(requestKey: string, member: BookingContact): Promise<void>
+}
+
+export interface BookingContact {
+  readonly memberId: number
+  readonly familyName: string | null
+  readonly givenName: string | null
+  readonly phone: string | null
+  readonly email: string | null
 }

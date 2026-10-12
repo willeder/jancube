@@ -3,8 +3,9 @@
 import type { EndOption } from '@jancube/application'
 import { redirect } from 'next/navigation'
 import { withContainer } from './container'
-import { toUserMessage } from './errors'
+import { isDomainError, toUserMessage } from './errors'
 import { clearHoldKey, readHoldKey, writeHoldKey } from './hold-cookie'
+import { endSession, readSessionMemberId } from './session'
 
 export type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string }
 export type FormState = { error: string | null }
@@ -45,15 +46,30 @@ export async function createHoldAction(_prev: FormState, form: FormData): Promis
   redirect('/booking/confirm')
 }
 
-/** C-04 「お客様情報の入力へ」: save the number of guests and continue to sign-in (C-05). */
+/**
+ * C-04 「お客様情報の入力へ」: save the number of guests and continue to sign-in (C-05).
+ * Customers who are already signed in skip C-05〜C-07 and go straight to payment.
+ */
 export async function confirmHoldAction(_prev: FormState, form: FormData): Promise<FormState> {
+  let next = '/booking/auth'
   try {
     const key = await readHoldKey()
-    await withContainer((c) => c.setGuestCount(key ?? '', Number(form.get('guestCount'))))
+    await withContainer(async (c) => {
+      await c.setGuestCount(key ?? '', Number(form.get('guestCount')))
+      const memberId = await readSessionMemberId()
+      if (memberId && key) {
+        await c.attachMemberToHold(key, memberId)
+        next = '/booking/payment'
+      }
+    })
   } catch (error) {
-    return { error: toUserMessage(error) }
+    // A stale session (member suspended or removed) falls back to signing in again.
+    if (!isDomainError(error, 'member_not_found', 'member_cannot_book')) {
+      return { error: toUserMessage(error) }
+    }
+    await endSession()
   }
-  redirect('/booking/auth')
+  redirect(next)
 }
 
 /** C-04 「日時を変更する」: free the hold and go back to the grid. */
