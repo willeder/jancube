@@ -8,6 +8,7 @@ import {
   signInCodeMessage,
   validateMemberProfile,
 } from '@jancube/domain'
+import type { CouponRepository } from '../ports/checkout'
 import type { Clock } from '../ports/clock'
 import type {
   AuthChallengeRepository,
@@ -27,6 +28,8 @@ export interface SignInDeps {
   readonly hasher: SecretHasher
   readonly random: RandomSource
   readonly clock: Clock
+  /** When present, coupons with grant_trigger 'registration' are granted to new members. */
+  readonly coupons?: CouponRepository
 }
 
 /** The code is bound to its challenge so a hash from one challenge cannot be replayed on another. */
@@ -164,6 +167,14 @@ export function makeRegisterMember(deps: SignInDeps) {
       channel: input.channel ?? 'web',
     })
     await deps.challenges.linkMember(challengeId, member.id)
+    for (const coupon of (await deps.coupons?.findByTrigger('registration', now)) ?? []) {
+      await deps.coupons?.grant({
+        memberId: member.id,
+        coupon,
+        issuanceKey: `registration:${coupon.couponId}:${member.id}`,
+        grantedAt: now,
+      })
+    }
     return { memberId: member.id }
   }
 }

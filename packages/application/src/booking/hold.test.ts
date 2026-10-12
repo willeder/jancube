@@ -32,6 +32,9 @@ function holdDeps(now = '2026-11-01T12:00:00+09:00') {
             ],
           }
         },
+        bookingState: async () => ({ status: 'draft', holdExpiresAt: null }),
+        confirm: async () => {},
+        recordUnconfirmablePayment: async () => ({ refundId: 0, idempotencyKey: '' }),
         createDraft: async (draft) => {
           seq++
           drafts.push({ ...draft, id: seq, status: 'draft' })
@@ -50,7 +53,10 @@ function holdDeps(now = '2026-11-01T12:00:00+09:00') {
         storeName: '大阪本町店',
         timezone: 'Asia/Tokyo',
         businessDate: d.businessDate,
+        roomGroupId: d.roomGroupId,
+        roomTypeId: 1,
         roomGroupName: '4麻ルーム',
+        requestedRoomId: d.requestedRoomId,
         requestedRoomName: null,
         capacity: 4,
         start: d.start,

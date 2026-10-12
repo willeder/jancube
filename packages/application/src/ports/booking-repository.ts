@@ -1,4 +1,5 @@
 import type { LocalDate, PriceQuote } from '@jancube/domain'
+import type { LockedConfirmationTx } from './checkout'
 import type { StoreInventory } from './inventory-repository'
 
 export interface NewDraftBooking {
@@ -37,7 +38,10 @@ export interface BookingSummary {
   readonly storeName: string
   readonly timezone: string
   readonly businessDate: LocalDate
+  readonly roomGroupId: number
+  readonly roomTypeId: number
   readonly roomGroupName: string
+  readonly requestedRoomId: number | null
   readonly requestedRoomName: string | null
   readonly capacity: number
   readonly start: Date
@@ -52,7 +56,7 @@ export interface BookingSummary {
 }
 
 /** Operations that run while holding the inventory lock for one room group and business date. */
-export interface LockedBookingTx {
+export interface LockedBookingTx extends LockedConfirmationTx {
   /** Inventory re-read inside the lock (sees holds created by concurrent requests). */
   loadInventory(storeId: number, from: Date, to: Date, now: Date): Promise<StoreInventory>
   createDraft(draft: NewDraftBooking): Promise<{ id: number; bookingCode: string }>

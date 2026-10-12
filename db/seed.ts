@@ -105,6 +105,24 @@ const legalDocuments = [
   { type: 'cancellation_policy', title: 'キャンセルポリシー', url: '/legal/cancellation' },
 ] as const
 
+/** Sample coupons: one granted at registration, one claimed by typing its code at C-09. */
+const coupons = [
+  {
+    code: 'FIRST500',
+    name: '初回ご利用 500円OFF',
+    amount: 500,
+    trigger: 'registration',
+    note: '全店舗対象 / 併用不可',
+  },
+  {
+    code: 'JCUBE2026',
+    name: 'JCUBE2026 クーポン 500円OFF',
+    amount: 500,
+    trigger: 'manual',
+    note: '全店舗対象 / 併用不可',
+  },
+] as const
+
 async function main() {
   const db = await createConnection({ uri: url, timezone: 'Z' })
   const id = async (sql: string, params: unknown[]) => {
@@ -232,6 +250,23 @@ async function main() {
          VALUES (?, 'draft-1', ?, ?, UNHEX(SHA2(?, 256)), '2026-01-01 00:00:00', '2026-01-01 00:00:00')
          ON DUPLICATE KEY UPDATE title = VALUES(title), content_url = VALUES(content_url)`,
         [doc.type, doc.title, doc.url, `${doc.type}:draft-1`],
+      )
+    }
+    for (const c of coupons) {
+      await db.query(
+        `INSERT INTO coupons (code, name, status) VALUES (?, ?, 'active')
+         ON DUPLICATE KEY UPDATE name = VALUES(name), status = 'active'`,
+        [c.code, c.name],
+      )
+      const couponId = await id('SELECT id FROM coupons WHERE code = ?', [c.code])
+      await db.query(
+        `INSERT INTO coupon_versions
+           (coupon_id, version_no, discount_type, discount_value, max_uses, valid_from, valid_to,
+            grant_trigger, conditions_note)
+         VALUES (?, 1, 'amount', ?, 1, '2026-01-01 00:00:00', '2027-12-31 15:00:00', ?, ?)
+         ON DUPLICATE KEY UPDATE discount_value = VALUES(discount_value),
+           grant_trigger = VALUES(grant_trigger), conditions_note = VALUES(conditions_note)`,
+        [couponId, c.amount, c.trigger, c.note],
       )
     }
     await db.commit()

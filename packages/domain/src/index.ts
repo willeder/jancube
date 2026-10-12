@@ -1,4 +1,5 @@
 export * from './cancellation/cancellation-policy'
+export * from './coupon/coupon'
 export * from './inventory/allocation'
 export * from './inventory/availability'
 export * from './inventory/occupancy'

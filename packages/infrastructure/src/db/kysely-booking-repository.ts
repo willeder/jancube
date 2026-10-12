@@ -8,6 +8,7 @@ import type {
 } from '@jancube/application'
 import type { LocalDate } from '@jancube/domain'
 import type { Database } from './create-db'
+import { lockedConfirmation } from './kysely-checkout-repository'
 import { KyselyInventoryRepository } from './kysely-inventory-repository'
 import { toLocalDate } from './sql-values'
 
@@ -61,6 +62,7 @@ export class KyselyBookingRepository implements BookingRepository {
         return fn({
           loadInventory: (storeId, from, to, now) => inventory.load(storeId, from, to, now),
           createDraft: (draft) => createDraft(trx, draft),
+          ...lockedConfirmation(trx),
         })
       }),
     )
@@ -82,6 +84,9 @@ export class KyselyBookingRepository implements BookingRepository {
         's.name as store_name',
         's.timezone',
         'b.business_date',
+        'b.room_group_id',
+        'g.room_type_id',
+        'b.requested_room_id',
         'g.name as group_name',
         'r.name as room_name',
         't.capacity',
@@ -115,7 +120,10 @@ export class KyselyBookingRepository implements BookingRepository {
       storeName: row.store_name,
       timezone: row.timezone,
       businessDate: toLocalDate(row.business_date),
+      roomGroupId: Number(row.room_group_id),
+      roomTypeId: Number(row.room_type_id),
       roomGroupName: row.group_name,
+      requestedRoomId: row.requested_room_id === null ? null : Number(row.requested_room_id),
       requestedRoomName: row.room_name,
       capacity: row.capacity,
       start: row.starts_at,

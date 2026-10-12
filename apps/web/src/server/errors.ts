@@ -35,6 +35,9 @@ const messages: Record<string, string> = {
   invalid_email: 'メールアドレスを正しく入力してください',
   terms_required: '利用規約・プライバシーポリシーへの同意が必要です',
   adult_required: '18歳以上の方のみご利用いただけます',
+  coupon_not_found: 'このクーポンコードはご利用いただけません',
+  coupon_not_applicable: 'このクーポンはこのご予約には使えません',
+  payment_not_found: 'お支払い情報が見つかりません。最初からやり直してください',
   legal_documents_missing: 'ただいま会員登録を受け付けられません。時間をおいて再度お試しください',
 }
 

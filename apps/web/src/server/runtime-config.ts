@@ -14,6 +14,12 @@ export interface RuntimeConfig {
   readonly authPepper: string
   readonly sessionSecret: string
   readonly smslink: { readonly apiToken: string; readonly endpoint: string }
+  /** Null in development without Stripe test keys: the local dev checkout page is used instead. */
+  readonly stripe: {
+    readonly secretKey: string
+    readonly webhookSecret: string
+    readonly accountId: string
+  } | null
 }
 
 /**
@@ -34,5 +40,21 @@ export function runtimeConfig(): RuntimeConfig {
     authPepper: secret('AUTH_PEPPER'),
     sessionSecret: secret('SESSION_SECRET'),
     smslink: { apiToken: env.SMSLINK_API_TOKEN ?? '', endpoint: env.SMSLINK_ENDPOINT ?? '' },
+    stripe: stripeConfig(env, isDevelopment),
+  }
+}
+
+function stripeConfig(env: Record<string, string | undefined>, isDevelopment: boolean) {
+  const secretKey = env.STRIPE_SECRET_KEY
+  if (!secretKey) {
+    if (isDevelopment) return null
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  const webhookSecret = env.STRIPE_WEBHOOK_SECRET ?? ''
+  if (!webhookSecret && !isDevelopment) throw new Error('STRIPE_WEBHOOK_SECRET is not configured')
+  return {
+    secretKey,
+    webhookSecret,
+    accountId: env.STRIPE_ACCOUNT_ID ?? 'default',
   }
 }
