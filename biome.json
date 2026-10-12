@@ -4,7 +4,9 @@
   "files": {
     "includes": [
       "**",
-      "!**/routeTree.gen.ts",
+      "!**/.next",
+      "!**/.open-next",
+      "!**/next-env.d.ts",
       "!**/schema.generated.ts",
       "!**/worker-configuration.d.ts"
     ]

@@ -4,7 +4,7 @@
  *   domain          → nothing (pure TypeScript)
  *   application     → domain
  *   infrastructure  → application, domain
- *   apps/*          → anything (composition roots)
+ *   apps/*          → anything (composition roots); web pages only through src/server/container.ts
  */
 module.exports = {
   forbidden: [
@@ -29,6 +29,14 @@ module.exports = {
       to: { path: '^apps/' },
     },
     {
+      name: 'web-pages-use-container',
+      comment:
+        'Next.js pages/route handlers call use cases via src/server/container.ts; they must not import adapters, Kysely or mysql2 directly.',
+      severity: 'error',
+      from: { path: '^apps/web/src/app' },
+      to: { path: '(^packages/infrastructure/|node_modules/(kysely|mysql2)/)' },
+    },
+    {
       name: 'no-circular',
       severity: 'error',
       from: {},
@@ -37,7 +45,7 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
-    exclude: { path: '(node_modules|dist|\\.wrangler|routeTree\\.gen\\.ts|\\.test\\.ts$)' },
+    exclude: { path: '(node_modules|dist|\\.wrangler|\\.next|\\.open-next|\\.test\\.ts$)' },
     tsPreCompilationDeps: true,
     combinedDependencies: true,
     enhancedResolveOptions: { exportsFields: ['exports'], conditionNames: ['import', 'default'] },

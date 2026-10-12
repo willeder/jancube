@@ -30,5 +30,22 @@ services:
       - '4000:4000'
     profiles: ['tidb']
 
+  # Production build preview (OpenNext + workerd) on Linux: `pnpm preview:linux` → http://localhost:8790
+  web-preview:
+    image: node:24-bookworm
+    profiles: ['preview']
+    volumes:
+      - ./:/src:ro
+      - pnpm-store:/root/.local/share/pnpm/store
+    environment:
+      CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE: mysql://root:jancube@mysql:3306/jancube
+    ports:
+      - '8790:8790'
+    command: ['bash', '/src/scripts/preview-linux.sh']
+    depends_on:
+      mysql:
+        condition: service_healthy
+
 volumes:
   mysql-data:
+  pnpm-store:

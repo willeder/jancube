@@ -25,7 +25,8 @@
     "db:codegen": "kysely-codegen --dialect mysql --url mysql://root:jancube@127.0.0.1:3306/jancube --out-file packages/infrastructure/src/db/schema.generated.ts",
     "db:tidb:up": "docker compose up -d tidb",
     "db:tidb:check": "tsx db/migrate.ts --target tidb --reset && tsx db/verify-compat.ts tidb",
-    "db:verify": "tsx db/verify-compat.ts mysql"
+    "db:verify": "tsx db/verify-compat.ts mysql",
+    "preview:linux": "docker compose --profile preview run --rm --service-ports web-preview"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
