@@ -218,6 +218,53 @@ export class KyselyCheckoutRepository implements CheckoutRepository {
     return { method: row.method as PaymentMethod, amount: Number(row.amount), paidAt: row.paid_at }
   }
 
+  async refundablePayments(bookingId: number) {
+    const rows = await this.db
+      .selectFrom('payments as p')
+      .select(['p.id', 'p.external_payment_id', 'p.amount'])
+      .select((eb) =>
+        eb
+          .selectFrom('refunds as r')
+          .select((e) => e.fn.coalesce(e.fn.sum<number>('r.amount'), e.lit(0)).as('n'))
+          .whereRef('r.payment_id', '=', 'p.id')
+          .where('r.status', 'in', ['requested', 'processing', 'succeeded'])
+          .as('refunded'),
+      )
+      .where('p.booking_id', '=', bookingId)
+      .where('p.status', '=', 'succeeded')
+      .orderBy('p.paid_at', 'desc')
+      .execute()
+    return rows.map((r) => ({
+      paymentId: Number(r.id),
+      externalPaymentId: r.external_payment_id,
+      refundable: Number(r.amount) - Number(r.refunded ?? 0),
+    }))
+  }
+
+  async createRefund(input: Parameters<CheckoutRepository['createRefund']>[0]) {
+    await this.db
+      .insertInto('refunds')
+      .ignore()
+      .values({
+        payment_id: input.paymentId,
+        booking_id: input.bookingId,
+        cancellation_id: input.cancellationId,
+        idempotency_key: input.idempotencyKey,
+        status: 'requested',
+        amount: input.amount,
+        reason: input.reason,
+        requested_by: input.requestedBy,
+      })
+      .execute()
+    const row = await this.db
+      .selectFrom('refunds')
+      .select('id')
+      .where('payment_id', '=', input.paymentId)
+      .where('idempotency_key', '=', input.idempotencyKey)
+      .executeTakeFirstOrThrow()
+    return Number(row.id)
+  }
+
   async finishRefund(
     refundId: number,
     result: { externalRefundId: string; at: Date } | { error: string },
@@ -241,6 +288,63 @@ export class KyselyCheckoutRepository implements CheckoutRepository {
 /** Confirmation steps; only called inside BookingRepository.withInventoryLock. */
 export function lockedConfirmation(trx: Database): LockedConfirmationTx {
   return {
+    async cancel(input) {
+      const at = input.requestedAt
+      const cancellation = await trx
+        .insertInto('booking_cancellations')
+        .values({
+          booking_id: input.bookingId,
+          policy_document_id: input.policyDocumentId,
+          requested_at: at,
+          automatic_fee_rate: input.automaticFeeRate,
+          applied_fee_rate: input.appliedFeeRate,
+          paid_amount: input.paidAmount,
+          fee_amount: input.feeAmount,
+          refund_amount: input.refundAmount,
+          reason: input.reason,
+          staff_id: input.staffId,
+          is_manual_override: input.manualOverride ? 1 : 0,
+        })
+        .executeTakeFirstOrThrow()
+      const updated = await trx
+        .updateTable('bookings')
+        .set({ status: 'canceled' })
+        .where('id', '=', input.bookingId)
+        .where('status', '=', 'confirmed')
+        .executeTakeFirst()
+      if (Number(updated.numUpdatedRows) !== 1) throw new Error('booking is no longer confirmed')
+      await trx
+        .updateTable('booking_assignments')
+        .set({ released_at: at, reason: 'booking canceled' })
+        .where('booking_id', '=', input.bookingId)
+        .where('released_at', 'is', null)
+        .execute()
+      if (input.reverseCoupon) {
+        await trx
+          .updateTable('coupon_redemptions')
+          .set({ status: 'reversed', released_at: at })
+          .where('booking_id', '=', input.bookingId)
+          .where('status', 'in', ['reserved', 'applied'])
+          .execute()
+      }
+      const cancellationId = Number(cancellation.insertId)
+      // Keys are revoked, cleaning plans updated and the customer notified by the jobs worker.
+      await trx
+        .insertInto('outbox_events')
+        .ignore()
+        .values({
+          event_key: `booking.canceled:${input.bookingId}`,
+          aggregate_type: 'booking',
+          aggregate_id: input.bookingId,
+          event_type: 'booking.canceled',
+          payload: JSON.stringify({ bookingId: input.bookingId, cancellationId }),
+          status: 'pending',
+          available_at: at,
+        })
+        .execute()
+      return { cancellationId }
+    },
+
     async bookingState(bookingId) {
       const row = await trx
         .selectFrom('bookings')

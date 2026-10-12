@@ -1549,6 +1549,10 @@ export interface NotificationDeliveries {
    */
   member_id: number | null;
   /**
+   * 送信文面暗号文(再送用)
+   */
+  message_ciphertext: Buffer | null;
+  /**
    * 再試行日時
    */
   next_retry_at: Date | null;

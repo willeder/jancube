@@ -20,6 +20,7 @@
   ],
   "vars": {
     "APP_ENV": "development",
+    "APP_URL": "http://localhost:3010",
     "EMAIL_FROM": "雀CUBE <no-reply@jancube.net>"
   }
 }

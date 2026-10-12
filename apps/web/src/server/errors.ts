@@ -38,6 +38,17 @@ const messages: Record<string, string> = {
   coupon_not_found: 'このクーポンコードはご利用いただけません',
   coupon_not_applicable: 'このクーポンはこのご予約には使えません',
   payment_not_found: 'お支払い情報が見つかりません。最初からやり直してください',
+  invalid_credentials: 'メールアドレスまたはパスワードが正しくありません',
+  weak_password: 'パスワードは英字と数字を含む12文字以上で設定してください',
+  token_invalid: 'リンクが無効か期限切れです。もう一度お手続きください',
+  staff_not_invitable: 'このスタッフには招待メールを送信できません',
+  forbidden: 'この操作を行う権限がありません',
+  booking_not_found: 'ご予約が見つかりません',
+  booking_not_cancellable: 'このご予約はキャンセルできません',
+  invalid_fee_rate: 'キャンセル料率は0〜100%で入力してください',
+  reason_required: '理由を入力してください',
+  template_variable_missing: 'テンプレートの差し込み項目が不足しています',
+  template_variable_unknown: 'テンプレートに使用できない差し込み項目があります',
   legal_documents_missing: 'ただいま会員登録を受け付けられません。時間をおいて再度お試しください',
 }
 

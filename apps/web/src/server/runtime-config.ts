@@ -5,6 +5,8 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 const DEV_FALLBACKS = {
   AUTH_PEPPER: 'dev-only-auth-pepper-not-secret',
   SESSION_SECRET: 'dev-only-session-secret-not-secret',
+  // 32 bytes, base64 — same development key as the jobs worker.
+  DATA_ENCRYPTION_KEY: 'ZGV2LW9ubHktZGF0YS1rZXktMzItYnl0ZXMtbG9uZyE=',
 } as const
 
 type SecretName = keyof typeof DEV_FALLBACKS
@@ -13,6 +15,12 @@ export interface RuntimeConfig {
   readonly isDevelopment: boolean
   readonly authPepper: string
   readonly sessionSecret: string
+  readonly dataKey: string
+  /** Public base URL (links in emails/SMS). Request origin is used for in-app redirects. */
+  readonly appUrl: string
+  readonly emailFrom: string
+  readonly resendApiKey: string | null
+  readonly lineChannelAccessToken: string | null
   readonly smslink: { readonly apiToken: string; readonly endpoint: string }
   /** Null in development without Stripe test keys: the local dev checkout page is used instead. */
   readonly stripe: {
@@ -39,6 +47,11 @@ export function runtimeConfig(): RuntimeConfig {
     isDevelopment,
     authPepper: secret('AUTH_PEPPER'),
     sessionSecret: secret('SESSION_SECRET'),
+    dataKey: secret('DATA_ENCRYPTION_KEY'),
+    appUrl: env.APP_URL ?? 'http://localhost:3010',
+    emailFrom: env.EMAIL_FROM ?? '雀CUBE <no-reply@jancube.net>',
+    resendApiKey: env.RESEND_API_KEY || null,
+    lineChannelAccessToken: env.LINE_CHANNEL_ACCESS_TOKEN || null,
     smslink: { apiToken: env.SMSLINK_API_TOKEN ?? '', endpoint: env.SMSLINK_ENDPOINT ?? '' },
     stripe: stripeConfig(env, isDevelopment),
   }

@@ -68,7 +68,18 @@ export class KyselyBookingRepository implements BookingRepository {
     )
   }
 
-  async findByRequestKey(requestKey: string): Promise<BookingSummary | null> {
+  findByRequestKey(requestKey: string): Promise<BookingSummary | null> {
+    return this.summary('b.client_request_key', requestKey)
+  }
+
+  findByCode(bookingCode: string): Promise<BookingSummary | null> {
+    return this.summary('b.booking_code', bookingCode)
+  }
+
+  private async summary(
+    column: 'b.client_request_key' | 'b.booking_code',
+    value: string,
+  ): Promise<BookingSummary | null> {
     const row = await this.db
       .selectFrom('bookings as b')
       .innerJoin('stores as s', 's.id', 'b.store_id')
@@ -108,7 +119,7 @@ export class KyselyBookingRepository implements BookingRepository {
           .limit(1)
           .as('regular_price'),
       )
-      .where('b.client_request_key', '=', requestKey)
+      .where(column, '=', value)
       .executeTakeFirst()
     if (!row) return null
     return {

@@ -73,6 +73,7 @@ export interface BookingRepository {
     fn: (tx: LockedBookingTx) => Promise<T>,
   ): Promise<T>
   findByRequestKey(requestKey: string): Promise<BookingSummary | null>
+  findByCode(bookingCode: string): Promise<BookingSummary | null>
   /** Ends a draft early (customer changed their selection). No-op unless it is still a draft. */
   expireDraft(requestKey: string, now: Date): Promise<void>
   setGuestCount(requestKey: string, guestCount: number): Promise<void>

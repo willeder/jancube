@@ -33,6 +33,7 @@ function holdDeps(now = '2026-11-01T12:00:00+09:00') {
           }
         },
         bookingState: async () => ({ status: 'draft', holdExpiresAt: null }),
+        cancel: async () => ({ cancellationId: 0 }),
         confirm: async () => {},
         recordUnconfirmablePayment: async () => ({ refundId: 0, idempotencyKey: '' }),
         createDraft: async (draft) => {
@@ -78,6 +79,7 @@ function holdDeps(now = '2026-11-01T12:00:00+09:00') {
       if (d) Object.assign(d, { guestCount: n })
     },
     assignMember: async () => {},
+    findByCode: async () => null,
   }
   let keys = 0
   const deps: HoldDeps = { ...base, bookings, newRequestKey: () => `key-${++keys}` }

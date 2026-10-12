@@ -8,3 +8,7 @@ SMSLINK_ENDPOINT=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_ACCOUNT_ID=
+# 32 random bytes, base64 (encrypts entry codes and notification destinations). Same value for jobs.
+DATA_ENCRYPTION_KEY=
+RESEND_API_KEY=
+LINE_CHANNEL_ACCESS_TOKEN=

@@ -1,4 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // mysql2 (via the infrastructure package) uses Buffer; Workers provide it with nodejs_compat.
+    "types": ["node"]
+  },
   "include": ["src", "worker-configuration.d.ts"]
 }

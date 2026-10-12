@@ -139,6 +139,19 @@ export interface CheckoutRepository {
   succeededPayment(
     bookingId: number,
   ): Promise<{ method: PaymentMethod; amount: number; paidAt: Date } | null>
+  /** Payments of a booking that can still be refunded (succeeded, minus refunds already made). */
+  refundablePayments(
+    bookingId: number,
+  ): Promise<{ paymentId: number; externalPaymentId: string | null; refundable: number }[]>
+  createRefund(input: {
+    readonly paymentId: number
+    readonly bookingId: number
+    readonly cancellationId: number | null
+    readonly amount: number
+    readonly reason: string
+    readonly idempotencyKey: string
+    readonly requestedBy: number | null
+  }): Promise<number>
   finishRefund(
     refundId: number,
     result: { externalRefundId: string; at: Date } | { error: string },
@@ -147,6 +160,24 @@ export interface CheckoutRepository {
 
 /** Operations on a booking that need the inventory lock (see BookingRepository.withInventoryLock). */
 export interface LockedConfirmationTx {
+  /**
+   * Cancels a confirmed booking: status, cancellation record, assignment release, coupon reversal
+   * when requested, and a booking.canceled outbox event (keys, cleaning and notifications follow).
+   */
+  cancel(input: {
+    readonly bookingId: number
+    readonly policyDocumentId: number
+    readonly requestedAt: Date
+    readonly automaticFeeRate: number
+    readonly appliedFeeRate: number
+    readonly paidAmount: number
+    readonly feeAmount: number
+    readonly refundAmount: number
+    readonly reason: string | null
+    readonly staffId: number | null
+    readonly manualOverride: boolean
+    readonly reverseCoupon: boolean
+  }): Promise<{ cancellationId: number }>
   bookingState(bookingId: number): Promise<{ status: string; holdExpiresAt: Date | null }>
   /** Payment succeeded (if any), booking confirmed, coupon applied, booking.confirmed queued. */
   confirm(input: {

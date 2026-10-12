@@ -15,7 +15,8 @@ const CHALLENGE_MINUTES = 40
 
 const secure = () => process.env.NODE_ENV === 'production'
 
-async function sign(payload: string): Promise<string> {
+/** HMAC-SHA-256 (SESSION_SECRET) of a cookie payload, base64url. */
+export async function sign(payload: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(runtimeConfig().sessionSecret),
@@ -27,7 +28,7 @@ async function sign(payload: string): Promise<string> {
   return Buffer.from(mac).toString('base64url')
 }
 
-function constantTimeEqual(a: string, b: string): boolean {
+export function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false
   let diff = 0
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
