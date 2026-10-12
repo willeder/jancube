@@ -126,6 +126,11 @@ export function fakeHoldDeps(now = '2026-11-01T12:00:00+09:00') {
         cancel: async () => ({ cancellationId: 0 }),
         confirm: async () => {},
         recordUnconfirmablePayment: async () => ({ refundId: 0, idempotencyKey: '' }),
+        assignmentContext: async () => {
+          throw new Error('not used by holds')
+        },
+        assignRoom: async () => 0,
+        releaseAssignment: async () => {},
         createDraft: async (draft) => {
           seq++
           drafts.push({ ...draft, id: seq, status: 'draft' })

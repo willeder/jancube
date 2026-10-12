@@ -235,7 +235,11 @@ async function applyChange(
       aggregate_type: 'booking',
       aggregate_id: input.bookingId,
       event_type: 'booking.changed',
-      payload: JSON.stringify({ bookingId: input.bookingId }),
+      // The jobs worker re-plans the previous date's cleaning and follows keys/rooms to the new time.
+      payload: JSON.stringify({
+        bookingId: input.bookingId,
+        previousBusinessDate: input.before.businessDate,
+      }),
       status: 'pending',
       available_at: input.changedAt,
     })

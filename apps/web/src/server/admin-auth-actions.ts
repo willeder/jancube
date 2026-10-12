@@ -1,5 +1,6 @@
 'use server'
 
+import { can } from '@jancube/domain'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { endStaffSession, startStaffSession, writeSelectedStore } from './admin-session'
@@ -16,15 +17,20 @@ async function origin(): Promise<string> {
 
 /** A-01 ログイン */
 export async function staffLoginAction(_prev: FormState, form: FormData): Promise<FormState> {
+  let next = '/admin'
   try {
     const session = await withContainer((c) =>
       c.staffSignIn(String(form.get('email') ?? ''), String(form.get('password') ?? '')),
     )
     await startStaffSession(session.staffId, form.get('remember') === 'on')
+    // Cleaning-only staff work in the cleaning screens (K-02), not the admin console.
+    if (!can(session.access, 'dashboard.view') && can(session.access, 'cleaning.work')) {
+      next = '/cleaning'
+    }
   } catch (error) {
     return { error: toUserMessage(error) }
   }
-  redirect('/admin')
+  redirect(next)
 }
 
 export async function staffLogoutAction(): Promise<void> {

@@ -301,6 +301,16 @@ async function main() {
         ])
       }
 
+      // Entrance lock (tracker #10: one per store). Development values; codes come from the local
+      // stand-in until SMARTROOMING_API_TOKEN and the real EntranceDoorApiKey are set (A-20).
+      await db.query(
+        `INSERT INTO lock_devices
+           (store_id, name, provider, provider_account_id, external_device_id, secret_reference, is_active)
+         VALUES (?, ?, 'smartrooming', 'dev-account', ?, 'SMARTROOMING_API_TOKEN', 1)
+         ON DUPLICATE KEY UPDATE name = VALUES(name)`,
+        [storeId, `ENTRANCE-${s.code}`, `dev-entrance-${s.code}`],
+      )
+
       for (const [index, r] of s.rooms.entries()) {
         const typeId = await id('SELECT id FROM room_types WHERE code = ?', [r.group])
         const named = r.group === 'CONCEPT' || r.group === 'VIP' ? 1 : 0

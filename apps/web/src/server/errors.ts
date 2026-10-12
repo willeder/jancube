@@ -80,6 +80,23 @@ const messages: Record<string, string> = {
   recipient_too_long: '宛名は100文字以内で入力してください',
   legal_document_not_found: 'この文書は現在公開されていません',
   maintenance: 'ただいまメンテナンス中です。しばらくしてから再度お試しください',
+  // Rooms, cleaning and keys (A-07 / A-09 / A-10 / A-20 / K-01〜K-03)
+  booking_not_assignable: 'このご予約は部屋割当を変更できません',
+  room_unchanged: '現在と同じ部屋です',
+  room_unavailable: 'この部屋には変更できません。空き状況を確認してください',
+  key_revoke_failed: '現在の入室コードを失効できませんでした。時間をおいて再度お試しください',
+  key_issue_failed: '入室コードを発行できませんでした。鍵デバイスの状態を確認してください',
+  key_not_issued: '入室コードが発行されていません',
+  room_not_assigned: '部屋が割り当てられていません',
+  lock_device_missing: 'この店舗に有効な鍵デバイスが登録されていません',
+  lock_device_not_found: '鍵デバイスが見つかりません',
+  lock_device_invalid: 'デバイス名・事業者アカウント・外部IDを半角英数字で入力してください',
+  lock_device_exists: 'この店舗には有効な鍵デバイスが既にあります（店舗入口に1台）',
+  cleaning_task_not_found: '清掃タスクが見つかりません',
+  cleaning_task_closed: 'この清掃タスクは既に完了または取消されています',
+  cleaning_worker_invalid: '担当者を選択し直してください',
+  memo_required: 'メモを入力してください',
+  memo_too_long: 'メモは500文字以内で入力してください',
 }
 
 export function toUserMessage(error: unknown): string {

@@ -1,26 +1,41 @@
 import {
+  type AccessKeyProvider,
   bookingConfirmedHandler,
   makeDispatchNotifications,
+  makeExpireHolds,
   makeNotify,
   makeNotifyBooking,
+  makeOperations,
   makeProcessOutbox,
   type OutboxHandler,
+  type PaymentGateway,
   systemClock,
 } from '@jancube/application'
 import {
   AesGcmSecretBox,
+  ConsoleAccessKeyProvider,
   ConsoleEmailSender,
   ConsoleLineSender,
   ConsoleSmsSender,
   createDb,
+  DevPaymentGateway,
+  KyselyAccessKeyRepository,
   KyselyAlertRepository,
   KyselyAuditLog,
   KyselyBatchRunRepository,
+  KyselyBookingRepository,
+  KyselyCleaningRepository,
+  KyselyLockDeviceRepository,
   KyselyNotificationRepository,
+  KyselyOperationsRepository,
   KyselyOutboxRepository,
+  KyselyStoreRepository,
   LineMessagingSender,
   ResendEmailSender,
+  SmartRoomingAccessKeyProvider,
   SmslinkSmsSender,
+  StripePaymentGateway,
+  UnconfiguredAccessKeyProvider,
 } from '@jancube/infrastructure'
 
 /** Development-only key so local runs need no secrets; never used when APP_ENV is not development. */
@@ -34,6 +49,14 @@ export interface JobsConfig {
   readonly resendApiKey: string | null
   readonly lineChannelAccessToken: string | null
   readonly smslink: { apiToken: string; endpoint: string } | null
+  /** Same Stripe account as apps/web; null in development without keys (dev gateway). */
+  readonly stripe: { secretKey: string; webhookSecret: string; accountId: string } | null
+  /** SmartRooming Connect API (entrance lock); null → development stand-in. */
+  readonly smartRooming: {
+    apiToken: string
+    baseUrl: string | null
+    timeZone: string | null
+  } | null
 }
 
 export function jobsConfig(env: Record<string, unknown>): JobsConfig {
@@ -56,7 +79,28 @@ export function jobsConfig(env: Record<string, unknown>): JobsConfig {
     smslink: str('SMSLINK_ENDPOINT')
       ? { apiToken: str('SMSLINK_API_TOKEN') ?? '', endpoint: str('SMSLINK_ENDPOINT') ?? '' }
       : null,
+    stripe: str('STRIPE_SECRET_KEY')
+      ? {
+          secretKey: str('STRIPE_SECRET_KEY') ?? '',
+          // Webhooks are received by apps/web; the jobs worker only expires sessions.
+          webhookSecret: str('STRIPE_WEBHOOK_SECRET') ?? '',
+          accountId: str('STRIPE_ACCOUNT_ID') ?? 'default',
+        }
+      : isDevelopment
+        ? null
+        : missingSecret('STRIPE_SECRET_KEY'),
+    smartRooming: str('SMARTROOMING_API_TOKEN')
+      ? {
+          apiToken: str('SMARTROOMING_API_TOKEN') ?? '',
+          baseUrl: str('SMARTROOMING_BASE_URL'),
+          timeZone: str('SMARTROOMING_TIME_ZONE'),
+        }
+      : null,
   }
+}
+
+function missingSecret(name: string): never {
+  throw new Error(`${name} is not configured`)
 }
 
 /**
@@ -107,18 +151,59 @@ function buildJobs(db: ReturnType<typeof createDb>, config: JobsConfig) {
       ? new ConsoleLineSender()
       : { push: missing('LINE_CHANNEL_ACCESS_TOKEN') }
 
+  const gateway: PaymentGateway = config.stripe
+    ? new StripePaymentGateway(config.stripe)
+    : new DevPaymentGateway()
+  // Development without a lock API token: codes are generated locally (never in production).
+  const lockProvider: AccessKeyProvider = config.smartRooming
+    ? new SmartRoomingAccessKeyProvider({
+        apiToken: config.smartRooming.apiToken,
+        baseUrl: config.smartRooming.baseUrl ?? undefined,
+        timeZone: config.smartRooming.timeZone ?? undefined,
+      })
+    : config.isDevelopment
+      ? new ConsoleAccessKeyProvider()
+      : new UnconfiguredAccessKeyProvider()
+  const audit = new KyselyAuditLog(db)
+  const batchRuns = new KyselyBatchRunRepository(db)
+  const operationsRepository = new KyselyOperationsRepository(db)
+  const operations = makeOperations({
+    ops: operationsRepository,
+    bookings: new KyselyBookingRepository(db),
+    cleaning: new KyselyCleaningRepository(db),
+    stores: new KyselyStoreRepository(db),
+    keys: new KyselyAccessKeyRepository(db),
+    devices: new KyselyLockDeviceRepository(db),
+    provider: lockProvider,
+    secrets,
+    alerts,
+    audit,
+    batchRuns,
+    notifyBooking,
+    clock,
+  })
+
   /** Business events → follow-up work. Each handler is idempotent. */
+  const confirmedNotice = bookingConfirmedHandler(notifyBooking)
   const handlers: Record<string, OutboxHandler> = {
-    'booking.confirmed': bookingConfirmedHandler(notifyBooking),
+    'booking.confirmed': async (event) => {
+      await confirmedNotice(event)
+      // Booked after the day-before batch: room, cleaning, code and notice right away.
+      await operations.onBookingConfirmed(event)
+    },
+    'booking.canceled': operations.onBookingCanceled,
+    'booking.changed': operations.onBookingChanged,
   }
 
   return {
     db,
     clock,
     alerts,
-    audit: new KyselyAuditLog(db),
-    batchRuns: new KyselyBatchRunRepository(db),
+    audit,
+    batchRuns,
     notifyBooking,
+    operations,
+    expireHolds: makeExpireHolds({ holds: operationsRepository, gateway, clock }),
     processOutbox: makeProcessOutbox({
       outbox: new KyselyOutboxRepository(db),
       alerts,

@@ -10,6 +10,7 @@ import type { LocalDate } from '@jancube/domain'
 import type { Database } from './create-db'
 import { lockedConfirmation } from './kysely-checkout-repository'
 import { KyselyInventoryRepository } from './kysely-inventory-repository'
+import { lockedAssignments } from './kysely-operations-repository'
 import { toLocalDate } from './sql-values'
 
 /** Bumped when the pricing algorithm changes, so stored calculations stay explainable. */
@@ -78,6 +79,7 @@ export class KyselyBookingRepository implements BookingRepository {
         loadInventory: (storeId, from, to, now) => inventory.load(storeId, from, to, now),
         createDraft: (draft) => createDraft(trx, draft),
         ...lockedConfirmation(trx),
+        ...lockedAssignments(trx),
       })
     })
   }

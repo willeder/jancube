@@ -15,3 +15,8 @@ LINE_CHANNEL_ACCESS_TOKEN=
 # C-21 maintenance screen for customer pages (1 = on). Optional text, e.g. the planned period.
 MAINTENANCE_MODE=
 MAINTENANCE_MESSAGE=
+# SmartRooming Connect API token (entrance lock codes). Without it, development generates codes
+# locally. Same values for the jobs worker. SMARTROOMING_TIME_ZONE: time zone of passcode periods.
+SMARTROOMING_API_TOKEN=
+SMARTROOMING_BASE_URL=
+SMARTROOMING_TIME_ZONE=
