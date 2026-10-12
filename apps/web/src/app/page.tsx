@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { withContainer } from '@/server/container'
 
 export const dynamic = 'force-dynamic'
@@ -14,12 +15,17 @@ export default async function StoreSelectPage() {
       </p>
       <ul className="space-y-3">
         {stores.map((s) => (
-          <li key={s.code} className="rounded-xl border border-line bg-white p-4">
-            <div className="font-bold">
-              {s.code} {s.name}
-            </div>
-            {s.accessText && <p className="mt-1 text-sm text-sub">{s.accessText}</p>}
-            <p className="mt-1 text-xs text-sub">{s.address}</p>
+          <li key={s.code}>
+            <Link
+              href={`/booking/${s.code}/date`}
+              className="block rounded-xl border border-line bg-white p-4 transition hover:border-brand"
+            >
+              <div className="font-bold">
+                {s.code} {s.name}
+              </div>
+              {s.accessText && <p className="mt-1 text-sm text-sub">{s.accessText}</p>}
+              <p className="mt-1 text-xs text-sub">{s.address}</p>
+            </Link>
           </li>
         ))}
       </ul>

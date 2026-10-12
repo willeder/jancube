@@ -1,6 +1,18 @@
 import 'server-only'
-import { makeListStores } from '@jancube/application'
-import { createDb, KyselyStoreRepository } from '@jancube/infrastructure'
+import {
+  type BookingDeps,
+  makeGetBookingCalendar,
+  makeGetDayAvailability,
+  makeGetEndOptions,
+  makeListStores,
+  systemClock,
+} from '@jancube/application'
+import {
+  createDb,
+  KyselyInventoryRepository,
+  KyselyPricingRepository,
+  KyselyStoreRepository,
+} from '@jancube/infrastructure'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 
 /**
@@ -22,8 +34,19 @@ export async function withContainer<T>(fn: (c: Container) => Promise<T>): Promis
 }
 
 function buildContainer(db: ReturnType<typeof createDb>) {
+  const stores = new KyselyStoreRepository(db)
+  const booking: BookingDeps = {
+    stores,
+    inventory: new KyselyInventoryRepository(db),
+    // Tracker #6: "cheapest eligible combination". Mixing packages with hourly time is assumed allowed.
+    pricing: new KyselyPricingRepository(db, { combinationRule: 'cheapest-combination' }),
+    clock: systemClock,
+  }
   return {
-    listStores: makeListStores({ stores: new KyselyStoreRepository(db) }),
+    listStores: makeListStores({ stores }),
+    getBookingCalendar: makeGetBookingCalendar(booking),
+    getDayAvailability: makeGetDayAvailability(booking),
+    getEndOptions: makeGetEndOptions(booking),
   }
 }
 
