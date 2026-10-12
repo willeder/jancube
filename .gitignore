@@ -2,8 +2,10 @@ node_modules/
 dist/
 .output/
 .wrangler/
-.tanstack/
-.vinxi/
+.next/
+.open-next/
+next-env.d.ts
+*.tsbuildinfo
 *.log
 .env
 .env.*

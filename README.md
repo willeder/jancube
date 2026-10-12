@@ -1,13 +1,13 @@
 # 雀CUBE 予約システム (Phase 1)
 
-TanStack Start on Cloudflare Workers · TiDB Cloud (MySQL-compatible) via Hyperdrive · Resend (email) · SMSLINK (SMS)
+Next.js 16.3.8 (App Router) on Cloudflare Workers via OpenNext · TiDB Cloud (MySQL-compatible) via Hyperdrive · Resend (email) · SMSLINK (SMS)
 
 ## Architecture
 
 Business logic is kept independent of the framework, as agreed with the client.
 
 ```
-apps/web                 TanStack Start (UI, server functions). Composition root: src/server/container.ts
+apps/web                 Next.js App Router (pages, route handlers, server actions). Composition root: src/server/container.ts
 apps/jobs                Cloudflare Worker for cron batches / queues
 packages/domain          Pure business rules: pricing, cancellation, time ranges. No dependencies.
 packages/application     Use cases + ports (interfaces for DB, SMS, email, payments, lock)
@@ -25,12 +25,14 @@ domain  ←  application  ←  infrastructure  ←  apps
 - `application` imports only `domain`. It defines ports; it never imports Kysely, Stripe, Cloudflare, etc.
 - `infrastructure` implements ports. Apps wire everything together per request.
 
-Routes and server functions call use cases from the container; they never query the database directly.
+Pages, route handlers and server actions call use cases from the container (`server-only`); they never
+query the database directly. `check:boundaries` fails if anything under `apps/web/src/app` imports the
+infrastructure package, Kysely or mysql2.
 
 ## Prerequisites
 
 - Node 24, pnpm 10
-- Docker Desktop (local MySQL / TiDB)
+- Docker Desktop (local MySQL / TiDB, and Linux production-build preview)
 
 ## Getting started
 
@@ -47,7 +49,8 @@ pnpm dev            # http://localhost:3000
 
 | Command | What it does |
 |---|---|
-| `pnpm dev` | Web app (Vite + workerd, Hyperdrive → local MySQL) |
+| `pnpm dev` | Web app (`next dev`, Cloudflare bindings via OpenNext; Hyperdrive → local MySQL) |
+| `pnpm preview:linux` | Production build with OpenNext, served in workerd on http://localhost:8790 (runs in Docker) |
 | `pnpm dev:jobs` | Jobs Worker; trigger crons via `/__scheduled?cron=...` |
 | `pnpm test` | Unit tests (Vitest) |
 | `pnpm typecheck` | TypeScript across all packages |
@@ -58,6 +61,18 @@ pnpm dev            # http://localhost:3000
 | `pnpm db:codegen` | Regenerate Kysely types from the local DB after a migration |
 | `pnpm db:verify` | Check tables, foreign keys, CHECK constraints, generated columns, collation on MySQL |
 | `pnpm db:tidb:up` / `db:tidb:check` | Apply the schema to a local TiDB container and run the same checks |
+
+## Next.js / OpenNext notes
+
+- Next.js is pinned to **16.3.8**. Next.js 16.4.0 currently returns HTTP 500 on Cloudflare with OpenNext
+  1.20.10 (`Unexpected loadManifest(/.next/server/preview-props.json)`). Upgrade only after OpenNext
+  supports the new version, and verify with `pnpm preview:linux`.
+- **The OpenNext build does not run on native Windows** (it creates symlinks, which Windows blocks without
+  admin/Developer Mode). `next dev` works on Windows; production builds run on Linux: `pnpm preview:linux`
+  locally, GitHub Actions in CI, or WSL.
+- Cloudflare bindings are read with `getCloudflareContext()`; types come from
+  `wrangler types --env-interface CloudflareEnv` (run automatically by `build` and `typecheck`).
+- Node.js middleware is not supported by OpenNext on Cloudflare; use the default (edge) middleware if needed.
 
 ## Database notes
 

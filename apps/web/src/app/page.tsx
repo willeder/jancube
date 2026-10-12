@@ -1,14 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { listStores } from '../server/stores'
+import { withContainer } from '@/server/container'
+
+export const dynamic = 'force-dynamic'
 
 /** C-01 店舗選択 */
-export const Route = createFileRoute('/')({
-  loader: () => listStores(),
-  component: StoreSelect,
-})
+export default async function StoreSelectPage() {
+  const stores = await withContainer((c) => c.listStores())
 
-function StoreSelect() {
-  const stores = Route.useLoaderData()
   return (
     <main className="mx-auto max-w-md px-4 py-6">
       <h1 className="mb-1 text-lg font-bold">店舗を選ぶ</h1>
