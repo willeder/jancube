@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@jancube/domain', '@jancube/application', '@jancube/infrastructure'],
   // Monorepo: trace server dependencies from the repository root.
   outputFileTracingRoot: join(import.meta.dirname, '../..'),
+  // Do not let `next dev` write editor-assistant rule files into the project.
+  agentRules: false,
 }
 
 export default nextConfig
