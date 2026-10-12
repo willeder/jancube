@@ -7,7 +7,7 @@ import {
   durationMinutes,
   type LocalDate,
 } from '@jancube/domain'
-import type { BookingRepository, BookingSummary } from '../ports/booking-repository'
+import type { BookingRepository, BookingSummary, DraftContact } from '../ports/booking-repository'
 import {
   type BookingDeps,
   bookingRules,
@@ -29,7 +29,16 @@ export interface CreateHoldInput {
   readonly laneKey: string
   readonly start: string
   readonly end: string
-  readonly source: 'web' | 'liff'
+  readonly source: 'web' | 'liff' | 'proxy'
+  /**
+   * Phone booking taken by staff (A-06, source = proxy): held for the store's proxy hold time while the
+   * customer pays through the payment link.
+   */
+  readonly proxy?: {
+    readonly staffId: number
+    readonly guestCount: number
+    readonly contact: DraftContact
+  }
   /** Hold the customer already has (replaced by the new one). */
   readonly previousRequestKey?: string | null
   readonly acquisition?: Partial<{
@@ -49,8 +58,21 @@ export function makeCreateHold(deps: HoldDeps) {
   return async function createHold(
     input: CreateHoldInput,
   ): Promise<{ requestKey: string; bookingCode: string }> {
+    if ((input.source === 'proxy') !== (input.proxy !== undefined)) {
+      throw new Error('proxy bookings need the staff member and customer (and only they do)')
+    }
     const ctx = await loadDayContext(deps, input.storeCode, input.date)
     const lane = findLane(ctx, input.laneKey)
+    const guestCount = input.proxy?.guestCount ?? lane.group.capacity
+    if (!Number.isInteger(guestCount) || guestCount < 1 || guestCount > lane.group.capacity) {
+      throw new DomainError(
+        'invalid_guest_count',
+        `guests must be between 1 and ${lane.group.capacity}`,
+      )
+    }
+    const holdMinutes = input.proxy
+      ? ctx.store.booking.proxyHoldMinutes
+      : ctx.store.booking.holdMinutes
     const range = createTimeRange(new Date(input.start), new Date(input.end))
     const priced = await lanePricing(deps, lane, range.start)
     const rules = bookingRules(priced)
@@ -84,10 +106,12 @@ export function makeCreateHold(deps: HoldDeps) {
         businessDate: input.date,
         start: range.start,
         end: range.end,
-        guestCount: lane.group.capacity,
+        guestCount,
         source: input.source,
+        createdByStaffId: input.proxy?.staffId ?? null,
+        contact: input.proxy?.contact ?? null,
         requestKey,
-        holdExpiresAt: addMinutes(ctx.now, ctx.store.booking.holdMinutes),
+        holdExpiresAt: addMinutes(ctx.now, holdMinutes),
         priceVersionId: priced.priceVersionId,
         taxRatePercent: priced.taxRatePercent,
         quote,

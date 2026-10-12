@@ -10,7 +10,11 @@ export interface NewDraftBooking {
   readonly start: Date
   readonly end: Date
   readonly guestCount: number
-  readonly source: 'web' | 'liff'
+  readonly source: 'web' | 'liff' | 'proxy'
+  /** Staff member who took a phone booking (source = proxy, A-06). */
+  readonly createdByStaffId: number | null
+  /** Customer of a proxy booking (member when the phone number is registered). */
+  readonly contact: DraftContact | null
   /** Random key identifying this hold (kept in an httpOnly cookie). Also the idempotency key. */
   readonly requestKey: string
   readonly holdExpiresAt: Date
@@ -79,6 +83,15 @@ export interface BookingRepository {
   setGuestCount(requestKey: string, guestCount: number): Promise<void>
   /** Links the signed-in member to the draft and snapshots their contact details. */
   assignMember(requestKey: string, member: BookingContact): Promise<void>
+}
+
+/** Contact snapshot of a booking; `memberId` is null for a phone booking of a non-member. */
+export interface DraftContact {
+  readonly memberId: number | null
+  readonly familyName: string | null
+  readonly givenName: string | null
+  readonly phone: string | null
+  readonly email: string | null
 }
 
 export interface BookingContact {

@@ -1,6 +1,7 @@
 export * from './crypto/secret-box'
 export * from './crypto/web-crypto'
 export * from './db/create-db'
+export * from './db/kysely-admin-repository'
 export * from './db/kysely-booking-repository'
 export * from './db/kysely-checkout-repository'
 export * from './db/kysely-coupon-repository'

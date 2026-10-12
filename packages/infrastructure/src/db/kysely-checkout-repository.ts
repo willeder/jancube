@@ -374,6 +374,14 @@ export function lockedConfirmation(trx: Database): LockedConfirmationTx {
         .where('booking_id', '=', bookingId)
         .where('status', '=', 'reserved')
         .execute()
+      // Phone booking paid through its payment link (C-18): the link cannot be used again.
+      await trx
+        .updateTable('payment_links')
+        .set({ used_at: at })
+        .where('booking_id', '=', bookingId)
+        .where('used_at', 'is', null)
+        .where('revoked_at', 'is', null)
+        .execute()
       // Picked up by the jobs worker (confirmation SMS/email, key issuance).
       await trx
         .insertInto('outbox_events')

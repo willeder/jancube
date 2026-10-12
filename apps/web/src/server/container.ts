@@ -3,6 +3,7 @@ import { createDb } from '@jancube/infrastructure'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { buildDeps } from './deps'
 import { adminFeatures } from './features/admin'
+import { adminBookingFeatures } from './features/admin-bookings'
 import { customerBookingFeatures } from './features/customer-booking'
 import { runtimeConfig } from './runtime-config'
 
@@ -32,6 +33,7 @@ function buildContainer(db: ReturnType<typeof createDb>) {
   return {
     ...customerBookingFeatures(deps),
     ...adminFeatures(deps),
+    ...adminBookingFeatures(deps),
   }
 }
 

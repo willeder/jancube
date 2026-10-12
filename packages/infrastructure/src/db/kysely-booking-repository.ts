@@ -32,40 +32,54 @@ async function withDeadlockRetry<T>(run: () => Promise<T>, attempts = 4): Promis
   }
 }
 
+/**
+ * Runs `fn` in a transaction holding the inventory_day_locks row for (roomGroupId, businessDate).
+ * Shared by every path that changes inventory (bookings, room blocks).
+ */
+export async function withInventoryDayLock<T>(
+  db: Database,
+  roomGroupId: number,
+  businessDate: LocalDate,
+  fn: (trx: Database) => Promise<T>,
+): Promise<T> {
+  // Create the lock row outside the transaction (idempotent). Doing it inside makes concurrent
+  // INSERT IGNOREs take shared locks that then deadlock when upgraded by FOR UPDATE.
+  await db
+    .insertInto('inventory_day_locks')
+    .ignore()
+    .values({ room_group_id: roomGroupId, business_date: dateValue(businessDate) })
+    .execute()
+
+  return withDeadlockRetry(() =>
+    db.transaction().execute(async (trx) => {
+      await trx
+        .selectFrom('inventory_day_locks')
+        .select('id')
+        .where('room_group_id', '=', roomGroupId)
+        .where('business_date', '=', dateValue(businessDate))
+        .forUpdate()
+        .execute()
+      return fn(trx)
+    }),
+  )
+}
+
 export class KyselyBookingRepository implements BookingRepository {
   constructor(private readonly db: Database) {}
 
-  async withInventoryLock<T>(
+  withInventoryLock<T>(
     roomGroupId: number,
     businessDate: LocalDate,
     fn: (tx: LockedBookingTx) => Promise<T>,
   ): Promise<T> {
-    // Create the lock row outside the transaction (idempotent). Doing it inside makes concurrent
-    // INSERT IGNOREs take shared locks that then deadlock when upgraded by FOR UPDATE.
-    await this.db
-      .insertInto('inventory_day_locks')
-      .ignore()
-      .values({ room_group_id: roomGroupId, business_date: dateValue(businessDate) })
-      .execute()
-
-    return withDeadlockRetry(() =>
-      this.db.transaction().execute(async (trx) => {
-        await trx
-          .selectFrom('inventory_day_locks')
-          .select('id')
-          .where('room_group_id', '=', roomGroupId)
-          .where('business_date', '=', dateValue(businessDate))
-          .forUpdate()
-          .execute()
-
-        const inventory = new KyselyInventoryRepository(trx)
-        return fn({
-          loadInventory: (storeId, from, to, now) => inventory.load(storeId, from, to, now),
-          createDraft: (draft) => createDraft(trx, draft),
-          ...lockedConfirmation(trx),
-        })
-      }),
-    )
+    return withInventoryDayLock(this.db, roomGroupId, businessDate, (trx) => {
+      const inventory = new KyselyInventoryRepository(trx)
+      return fn({
+        loadInventory: (storeId, from, to, now) => inventory.load(storeId, from, to, now),
+        createDraft: (draft) => createDraft(trx, draft),
+        ...lockedConfirmation(trx),
+      })
+    })
   }
 
   findByRequestKey(requestKey: string): Promise<BookingSummary | null> {
@@ -201,6 +215,12 @@ async function createDraft(
       guest_count: d.guestCount,
       status: 'draft',
       source: d.source,
+      created_by_staff_id: d.createdByStaffId,
+      member_id: d.contact?.memberId ?? null,
+      contact_family_name: d.contact?.familyName ?? null,
+      contact_given_name: d.contact?.givenName ?? null,
+      contact_phone_e164: d.contact?.phone ?? null,
+      contact_email: d.contact?.email ?? null,
       client_request_key: d.requestKey,
       hold_expires_at: d.holdExpiresAt,
       acquisition_source: d.acquisition.source,

@@ -49,6 +49,18 @@ const messages: Record<string, string> = {
   reason_required: '理由を入力してください',
   template_variable_missing: 'テンプレートの差し込み項目が不足しています',
   template_variable_unknown: 'テンプレートに使用できない差し込み項目があります',
+  notification_not_found: '通知が見つかりません',
+  payment_link_invalid: 'このお支払いリンクは無効です。お手数ですが店舗へご連絡ください',
+  payment_link_expired:
+    'このお支払いリンクは有効期限が切れました。お手数ですが店舗へご連絡ください',
+  invalid_block_period: 'ブロック期間は31日以内で指定してください',
+  reason_too_long: '理由は500文字以内で入力してください',
+  block_not_found: '枠ブロックが見つかりません',
+  alert_not_found: 'アラートが見つかりません',
+  alert_resolved: 'このアラートは解決済みです',
+  refund_not_found: '返金が見つかりません',
+  refund_not_retryable: 'この返金は再実行できません',
+  invalid_time_range: '終了は開始より後にしてください',
   legal_documents_missing: 'ただいま会員登録を受け付けられません。時間をおいて再度お試しください',
 }
 

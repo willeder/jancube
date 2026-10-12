@@ -1,4 +1,9 @@
 import type { CalendarOverride, Store, WeeklyHours } from '@jancube/domain'
+import type {
+  BookingRepository,
+  BookingSummary,
+  NewDraftBooking,
+} from '../ports/booking-repository'
 import type { Clock } from '../ports/clock'
 import type {
   InventoryRepository,
@@ -10,6 +15,7 @@ import type {
 } from '../ports/inventory-repository'
 import type { StoreRepository } from '../ports/store-repository'
 import type { BookingDeps } from './booking-context'
+import type { HoldDeps } from './hold'
 
 /** In-memory adapters for use-case tests. */
 export function fakeBookingDeps(options: {
@@ -92,3 +98,84 @@ export function fakeBookingDeps(options: {
 }
 
 export const jst = (date: string, hhmm: string) => new Date(`${date}T${hhmm}:00+09:00`)
+
+/** In-memory hold storage on top of fakeBookingDeps (drafts are kept in `drafts`). */
+export function fakeHoldDeps(now = '2026-11-01T12:00:00+09:00') {
+  const base = fakeBookingDeps({ now })
+  const drafts: (NewDraftBooking & { id: number; status: BookingSummary['status'] })[] = []
+  let seq = 0
+  const bookings: BookingRepository = {
+    withInventoryLock: async (_g, _d, fn) =>
+      fn({
+        loadInventory: async (storeId, from, to, at) => {
+          const inv = await base.inventory.load(storeId, from, to, at)
+          const live = drafts.filter((d) => d.status === 'draft' && d.holdExpiresAt > at)
+          return {
+            ...inv,
+            bookings: [
+              ...inv.bookings,
+              ...live.map((d) => ({
+                groupId: d.roomGroupId,
+                roomId: d.requestedRoomId,
+                range: { start: d.start, end: d.end },
+              })),
+            ],
+          }
+        },
+        bookingState: async () => ({ status: 'draft', holdExpiresAt: null }),
+        cancel: async () => ({ cancellationId: 0 }),
+        confirm: async () => {},
+        recordUnconfirmablePayment: async () => ({ refundId: 0, idempotencyKey: '' }),
+        createDraft: async (draft) => {
+          seq++
+          drafts.push({ ...draft, id: seq, status: 'draft' })
+          return { id: seq, bookingCode: `JC-2026-${String(seq).padStart(6, '0')}` }
+        },
+      }),
+    findByRequestKey: async (key) => summary(drafts.find((x) => x.requestKey === key)),
+    expireDraft: async (key) => {
+      for (const d of drafts) if (d.requestKey === key && d.status === 'draft') d.status = 'expired'
+    },
+    setGuestCount: async (key, n) => {
+      const d = drafts.find((x) => x.requestKey === key)
+      if (d) Object.assign(d, { guestCount: n })
+    },
+    assignMember: async (key, contact) => {
+      const d = drafts.find((x) => x.requestKey === key)
+      if (d) Object.assign(d, { contact: { ...contact } })
+    },
+    findByCode: async (code) =>
+      summary(drafts.find((x) => `JC-2026-${String(x.id).padStart(6, '0')}` === code)),
+  }
+  function summary(d: (typeof drafts)[number] | undefined): BookingSummary | null {
+    if (!d) return null
+    return {
+      id: d.id,
+      bookingCode: `JC-2026-${String(d.id).padStart(6, '0')}`,
+      status: d.status,
+      storeId: d.storeId,
+      storeCode: 'JC001',
+      storeName: '大阪本町店',
+      timezone: 'Asia/Tokyo',
+      businessDate: d.businessDate,
+      roomGroupId: d.roomGroupId,
+      roomTypeId: 1,
+      roomGroupName: '4麻ルーム',
+      requestedRoomId: d.requestedRoomId,
+      requestedRoomName: null,
+      capacity: 4,
+      start: d.start,
+      end: d.end,
+      guestCount: d.guestCount,
+      holdExpiresAt: d.holdExpiresAt,
+      memberId: d.contact?.memberId ?? null,
+      regularPrice: d.quote.regularPrice,
+      subtotal: d.quote.price,
+      discount: 0,
+      total: d.quote.price,
+    }
+  }
+  let keys = 0
+  const deps: HoldDeps = { ...base, bookings, newRequestKey: () => `key-${++keys}` }
+  return { deps, drafts }
+}
