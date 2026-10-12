@@ -6,6 +6,7 @@ import { adminFeatures } from './features/admin'
 import { adminBookingFeatures } from './features/admin-bookings'
 import { customerBookingFeatures } from './features/customer-booking'
 import { customerMyPageFeatures } from './features/customer-mypage'
+import { lineReportsFeatures } from './features/line-reports'
 import { operationsFeatures } from './features/operations'
 import { runtimeConfig } from './runtime-config'
 
@@ -38,6 +39,7 @@ function buildContainer(db: ReturnType<typeof createDb>) {
     ...adminFeatures(deps),
     ...adminBookingFeatures(deps),
     ...operationsFeatures(deps),
+    ...lineReportsFeatures(deps),
   }
 }
 

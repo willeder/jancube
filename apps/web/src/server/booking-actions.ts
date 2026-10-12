@@ -2,6 +2,7 @@
 
 import type { EndOption } from '@jancube/application'
 import { redirect } from 'next/navigation'
+import { readBookingAttribution } from './booking-attribution'
 import { withContainer } from './container'
 import { isDomainError, toUserMessage } from './errors'
 import { clearHoldKey, readHoldKey, writeHoldKey } from './hold-cookie'
@@ -28,6 +29,7 @@ export async function getEndOptionsAction(input: {
 export async function createHoldAction(_prev: FormState, form: FormData): Promise<FormState> {
   try {
     const previousRequestKey = await readHoldKey()
+    const attribution = await readBookingAttribution()
     const hold = await withContainer((c) =>
       c.createHold({
         storeCode: String(form.get('storeCode')),
@@ -35,8 +37,9 @@ export async function createHoldAction(_prev: FormState, form: FormData): Promis
         laneKey: String(form.get('laneKey')),
         start: String(form.get('start')),
         end: String(form.get('end')),
-        source: 'web',
         previousRequestKey,
+        // 'liff' inside the LINE app, plus UTM tags of the landing page (F-BK-17, F-RPT-05).
+        ...attribution,
       }),
     )
     await writeHoldKey(hold.requestKey)

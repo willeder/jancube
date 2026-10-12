@@ -8,10 +8,11 @@ import { withContainer } from '@/server/container'
 import { isDomainError, toUserMessage } from '@/server/errors'
 import { requireMemberPage } from '@/server/member-page'
 import { EmailForm, WithdrawForm } from './AccountForms'
+import { UnlinkLineButton } from './UnlinkLineButton'
 
 export const dynamic = 'force-dynamic'
 
-/** LINE account linking (LIFF, built separately). */
+/** LINE account linking (LIFF). */
 const LINE_LINK_URL = '/liff/link'
 
 /** C-17 会員情報・LINE連携・退会 */
@@ -69,6 +70,7 @@ export default async function AccountPage({
               <p className="mt-1 text-xs text-sub">
                 予約完了・部屋確定などのお知らせはLINEでお届けします
               </p>
+              <UnlinkLineButton />
             </>
           ) : (
             <>

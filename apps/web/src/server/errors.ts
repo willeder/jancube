@@ -97,12 +97,27 @@ const messages: Record<string, string> = {
   cleaning_worker_invalid: '担当者を選択し直してください',
   memo_required: 'メモを入力してください',
   memo_too_long: 'メモは500文字以内で入力してください',
+  line_token_invalid: 'LINEの認証が確認できませんでした。LINEアプリからもう一度開いてください',
+  line_not_configured: 'ただいまLINE連携をご利用いただけません。Webサイトからご予約ください',
+  line_already_linked:
+    'このLINEアカウントは別の会員に連携済みです。連携を解除してから再度お試しください',
+  line_link_expired: 'LINE連携の有効期限が切れました。LINEアプリからもう一度開いてください',
+  invalid_period: '期間の指定が正しくありません（終了日が開始日より前です）',
+  period_too_long: '期間は1年以内で指定してください',
+  report_type_unknown: '指定されたレポートは出力できません',
+  invalid_url: 'URLの形式が正しくありません',
 }
 
 export function toUserMessage(error: unknown): string {
   if (error instanceof DomainError) return messages[error.code] ?? 'ご予約を進められませんでした'
   console.error(error)
   return 'エラーが発生しました。時間をおいて再度お試しください'
+}
+
+/** Message for an error code passed in a URL (e.g. after a failed CSV download). */
+export function messageForCode(code: string | null | undefined): string | null {
+  if (!code) return null
+  return messages[code] ?? 'エラーが発生しました。時間をおいて再度お試しください'
 }
 
 export function isDomainError(error: unknown, ...codes: string[]): error is DomainError {

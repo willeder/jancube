@@ -23,6 +23,18 @@ export interface RuntimeConfig {
   readonly lineChannelAccessToken: string | null
   /** C-21: MAINTENANCE_MODE=1 stops customer screens; MAINTENANCE_MESSAGE describes the period. */
   readonly maintenance: { readonly enabled: boolean; readonly message: string | null }
+  /**
+   * LINE (F-LINE-01〜05). Null values = not set up yet: development uses stand-ins, other
+   * environments answer LINE requests with "not configured" (the rest of the app keeps working).
+   */
+  readonly line: {
+    /** LINE Login channel id of the LIFF app (ID token audience; member_line_links.provider_id). */
+    readonly loginChannelId: string | null
+    /** LIFF app id (public; used by the /liff page). */
+    readonly liffId: string | null
+    /** Messaging API channel secret (webhook signature). */
+    readonly channelSecret: string | null
+  }
   readonly smslink: { readonly apiToken: string; readonly endpoint: string }
   /** Null in development without Stripe test keys: the local dev checkout page is used instead. */
   readonly stripe: {
@@ -57,6 +69,11 @@ export function runtimeConfig(): RuntimeConfig {
     maintenance: {
       enabled: ['1', 'true', 'on'].includes((env.MAINTENANCE_MODE ?? '').trim().toLowerCase()),
       message: env.MAINTENANCE_MESSAGE?.trim() || null,
+    },
+    line: {
+      loginChannelId: env.LINE_LOGIN_CHANNEL_ID || null,
+      liffId: env.LIFF_ID || null,
+      channelSecret: env.LINE_CHANNEL_SECRET || null,
     },
     smslink: { apiToken: env.SMSLINK_API_TOKEN ?? '', endpoint: env.SMSLINK_ENDPOINT ?? '' },
     stripe: stripeConfig(env, isDevelopment),

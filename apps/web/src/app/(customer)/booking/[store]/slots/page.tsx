@@ -1,5 +1,6 @@
 import type { DayAvailability } from '@jancube/application'
 import Link from 'next/link'
+import { FunnelBeacon } from '@/components/FunnelBeacon'
 import { ErrorPanel, StoreBar } from '@/components/StoreBar'
 import { dateLabel } from '@/lib/format'
 import { withContainer } from '@/server/container'
@@ -47,6 +48,7 @@ export default async function SlotsPage({
     <>
       <StoreBar storeName={day.store.name} backHref={back} />
       <main className="mx-auto max-w-md px-4 py-5">
+        <FunnelBeacon step="slots_viewed" store={store} />
         <div className="flex gap-1.5 overflow-x-auto pb-2">
           {nearby.map((d) =>
             d.bookable ? (

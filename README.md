@@ -61,6 +61,7 @@ pnpm dev            # http://localhost:3000
 | `pnpm db:codegen` | Regenerate Kysely types from the local DB after a migration |
 | `pnpm db:verify` | Check tables, foreign keys, CHECK constraints, generated columns, collation on MySQL |
 | `pnpm db:tidb:up` / `db:tidb:check` | Apply the schema to a local TiDB container and run the same checks |
+| `pnpm line:rich-menu` | Create the LINE rich menu (L-01); see docs/line-setup.md |
 
 ## Next.js / OpenNext notes
 
@@ -88,5 +89,7 @@ pnpm dev            # http://localhost:3000
 ## Not yet wired
 
 - SMSLINK adapter: waiting for the API specification (`SmslinkSmsSender` throws until implemented).
-- Stripe/PayPay, LINE, smart lock (SmartRooming Connect API): ports to be added with each feature.
+- Stripe/PayPay, smart lock (SmartRooming Connect API): ports to be added with each feature.
+- LINE / LIFF: implemented; switched on by environment variables (docs/line-setup.md). Deployment,
+  monitoring, backups, reports/CSV definitions: docs/operations.md.
 - Hyperdrive id in `wrangler.jsonc` is a placeholder until the production Hyperdrive config exists.

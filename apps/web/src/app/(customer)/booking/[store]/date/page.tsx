@@ -1,5 +1,6 @@
 import type { BookingCalendar, CalendarDayStatus } from '@jancube/application'
 import Link from 'next/link'
+import { FunnelBeacon } from '@/components/FunnelBeacon'
 import { ErrorPanel, StoreBar } from '@/components/StoreBar'
 import { WEEKDAYS, weekdayIndex } from '@/lib/format'
 import { withContainer } from '@/server/container'
@@ -47,6 +48,7 @@ export default async function DateSelectPage({
     <>
       <StoreBar storeName={calendar.store.name} backHref="/" />
       <main className="mx-auto max-w-md px-4 py-5">
+        <FunnelBeacon step="store_selected" store={store} />
         <h1 className="text-lg font-bold">日付を選ぶ</h1>
         <p className="mt-1 text-sm text-sub">
           受付期間は本日から{calendar.days.length - 1}日先まで。休業日は選択できません
