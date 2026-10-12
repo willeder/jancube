@@ -26,7 +26,8 @@
     "db:tidb:up": "docker compose up -d tidb",
     "db:tidb:check": "tsx db/migrate.ts --target tidb --reset && tsx db/verify-compat.ts tidb",
     "db:verify": "tsx db/verify-compat.ts mysql",
-    "preview:linux": "docker compose --profile preview run --rm --service-ports web-preview"
+    "preview:linux": "docker compose --profile preview run --rm --service-ports web-preview",
+    "db:check:concurrency": "tsx db/check-hold-concurrency.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
