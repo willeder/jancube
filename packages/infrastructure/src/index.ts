@@ -1,4 +1,5 @@
 export * from './db/create-db'
+export * from './db/kysely-booking-repository'
 export * from './db/kysely-inventory-repository'
 export * from './db/kysely-pricing-repository'
 export * from './db/kysely-store-repository'

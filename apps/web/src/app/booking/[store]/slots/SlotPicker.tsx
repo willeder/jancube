@@ -1,10 +1,9 @@
 'use client'
 
 import type { AvailabilityLane, DayAvailability, EndOption } from '@jancube/application'
-import Link from 'next/link'
-import { useState, useTransition } from 'react'
+import { useActionState, useState, useTransition } from 'react'
 import { dateLabel, durationLabel, hhmm, yen } from '@/lib/format'
-import { getEndOptionsAction } from '@/server/booking-actions'
+import { createHoldAction, getEndOptionsAction } from '@/server/booking-actions'
 
 type Selection = { lane: AvailabilityLane; start: string; startMinute: number }
 
@@ -156,12 +155,7 @@ function Summary({
   end: EndOption
 }) {
   const { quote } = end
-  const next = `/booking/${day.store.code}/confirm?${new URLSearchParams({
-    date: day.date,
-    lane: selection.lane.key,
-    start: selection.start,
-    end: end.end,
-  })}`
+  const [state, holdAction, holding] = useActionState(createHoldAction, { error: null })
   return (
     <section className="mt-4 rounded-xl border border-line bg-white p-4 text-sm">
       <div className="text-sub">
@@ -187,12 +181,23 @@ function Summary({
         </div>
       </dl>
       <p className="mt-2 text-xs text-sub">クーポンはお支払い画面で適用できます</p>
-      <Link
-        href={next}
-        className="mt-3 block rounded-xl bg-brand py-3 text-center font-bold text-white"
-      >
-        この内容で進む
-      </Link>
+      {state.error && (
+        <p className="mt-3 rounded-lg bg-alert-pale p-3 text-sm text-alert">{state.error}</p>
+      )}
+      <form action={holdAction}>
+        <input type="hidden" name="storeCode" value={day.store.code} />
+        <input type="hidden" name="date" value={day.date} />
+        <input type="hidden" name="laneKey" value={selection.lane.key} />
+        <input type="hidden" name="start" value={selection.start} />
+        <input type="hidden" name="end" value={end.end} />
+        <button
+          type="submit"
+          disabled={holding}
+          className="mt-3 w-full rounded-xl bg-brand py-3 font-bold text-white disabled:opacity-60"
+        >
+          {holding ? 'お部屋を確保しています…' : 'この内容で進む'}
+        </button>
+      </form>
     </section>
   )
 }

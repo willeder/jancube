@@ -1,14 +1,20 @@
 import 'server-only'
 import {
   type BookingDeps,
+  type HoldDeps,
+  makeCreateHold,
+  makeGetActiveHold,
   makeGetBookingCalendar,
   makeGetDayAvailability,
   makeGetEndOptions,
   makeListStores,
+  makeReleaseHold,
+  makeSetGuestCount,
   systemClock,
 } from '@jancube/application'
 import {
   createDb,
+  KyselyBookingRepository,
   KyselyInventoryRepository,
   KyselyPricingRepository,
   KyselyStoreRepository,
@@ -42,11 +48,20 @@ function buildContainer(db: ReturnType<typeof createDb>) {
     pricing: new KyselyPricingRepository(db, { combinationRule: 'cheapest-combination' }),
     clock: systemClock,
   }
+  const hold: HoldDeps = {
+    ...booking,
+    bookings: new KyselyBookingRepository(db),
+    newRequestKey: () => crypto.randomUUID(),
+  }
   return {
     listStores: makeListStores({ stores }),
     getBookingCalendar: makeGetBookingCalendar(booking),
     getDayAvailability: makeGetDayAvailability(booking),
     getEndOptions: makeGetEndOptions(booking),
+    createHold: makeCreateHold(hold),
+    getActiveHold: makeGetActiveHold(hold),
+    setGuestCount: makeSetGuestCount(hold),
+    releaseHold: makeReleaseHold(hold),
   }
 }
 

@@ -15,6 +15,11 @@ const messages: Record<string, string> = {
   not_slot_aligned: '開始・終了は30分単位でお選びください',
   invalid_time: '時間の指定が正しくありません',
   invalid_date: '日付の指定が正しくありません',
+  hold_not_found: 'ご予約手続き中の情報が見つかりません。最初からやり直してください',
+  hold_expired:
+    '仮押さえの期限が切れました。お手数ですが、もう一度お日にちと時間の選択からお願いします',
+  hold_not_active: 'このご予約の手続きは終了しています',
+  invalid_guest_count: 'ご利用人数を正しく選択してください',
 }
 
 export function toUserMessage(error: unknown): string {
