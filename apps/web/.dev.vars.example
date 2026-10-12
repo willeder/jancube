@@ -12,3 +12,6 @@ STRIPE_ACCOUNT_ID=
 DATA_ENCRYPTION_KEY=
 RESEND_API_KEY=
 LINE_CHANNEL_ACCESS_TOKEN=
+# C-21 maintenance screen for customer pages (1 = on). Optional text, e.g. the planned period.
+MAINTENANCE_MODE=
+MAINTENANCE_MESSAGE=

@@ -21,6 +21,8 @@ export interface RuntimeConfig {
   readonly emailFrom: string
   readonly resendApiKey: string | null
   readonly lineChannelAccessToken: string | null
+  /** C-21: MAINTENANCE_MODE=1 stops customer screens; MAINTENANCE_MESSAGE describes the period. */
+  readonly maintenance: { readonly enabled: boolean; readonly message: string | null }
   readonly smslink: { readonly apiToken: string; readonly endpoint: string }
   /** Null in development without Stripe test keys: the local dev checkout page is used instead. */
   readonly stripe: {
@@ -52,6 +54,10 @@ export function runtimeConfig(): RuntimeConfig {
     emailFrom: env.EMAIL_FROM ?? '雀CUBE <no-reply@jancube.net>',
     resendApiKey: env.RESEND_API_KEY || null,
     lineChannelAccessToken: env.LINE_CHANNEL_ACCESS_TOKEN || null,
+    maintenance: {
+      enabled: ['1', 'true', 'on'].includes((env.MAINTENANCE_MODE ?? '').trim().toLowerCase()),
+      message: env.MAINTENANCE_MESSAGE?.trim() || null,
+    },
     smslink: { apiToken: env.SMSLINK_API_TOKEN ?? '', endpoint: env.SMSLINK_ENDPOINT ?? '' },
     stripe: stripeConfig(env, isDevelopment),
   }

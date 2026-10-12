@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation'
+import { ProfileForm } from '@/components/auth/ProfileForm'
 import { HoldCountdown } from '@/components/HoldCountdown'
 import { ErrorPanel, StoreBar } from '@/components/StoreBar'
 import { withContainer } from '@/server/container'
 import { isDomainError, toUserMessage } from '@/server/errors'
 import { readHoldKey } from '@/server/hold-cookie'
 import { readChallengeId } from '@/server/session'
-import { ProfileForm } from './ProfileForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,7 +31,10 @@ export default async function ProfilePage() {
           <p className="mt-1 text-sm text-sub">お名前（本名でのご登録をお願いしています）</p>
         </div>
         <ProfileForm />
-        <HoldCountdown expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()} />
+        <HoldCountdown
+          expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
+          storeCode={hold.storeCode}
+        />
       </main>
     </>
   )

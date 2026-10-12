@@ -1,12 +1,12 @@
 import type { BookingSummary } from '@jancube/application'
 import { redirect } from 'next/navigation'
+import { PhoneForm } from '@/components/auth/PhoneForm'
 import { HoldCountdown } from '@/components/HoldCountdown'
 import { ErrorPanel, StoreBar } from '@/components/StoreBar'
 import { withContainer } from '@/server/container'
 import { toUserMessage } from '@/server/errors'
 import { readHoldKey } from '@/server/hold-cookie'
 import { readSessionMemberId } from '@/server/session'
-import { PhoneForm } from './PhoneForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +33,10 @@ export default async function PhonePage() {
           </p>
         </div>
         <PhoneForm />
-        <HoldCountdown expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()} />
+        <HoldCountdown
+          expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
+          storeCode={hold.storeCode}
+        />
       </main>
     </>
   )

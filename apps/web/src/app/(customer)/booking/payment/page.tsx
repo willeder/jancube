@@ -61,7 +61,10 @@ export default async function PaymentPage({
           initialGrantId={claimed?.grantId ?? bestGrantId}
           codeForm={<CouponCodeForm />}
         />
-        <HoldCountdown expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()} />
+        <HoldCountdown
+          expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
+          storeCode={hold.storeCode}
+        />
         <p className="text-xs text-sub">
           お支払いにより、キャンセルポリシー（24時間前まで無料 / 24時間以内50% /
           開始以降100%）に同意したものとみなします

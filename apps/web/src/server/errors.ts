@@ -62,6 +62,24 @@ const messages: Record<string, string> = {
   refund_not_retryable: 'この返金は再実行できません',
   invalid_time_range: '終了は開始より後にしてください',
   legal_documents_missing: 'ただいま会員登録を受け付けられません。時間をおいて再度お試しください',
+  // C-12〜C-22 マイページ・ログイン
+  booking_not_changeable: 'このご予約は変更できません。最新の内容をご確認ください',
+  change_not_allowed:
+    'ご利用開始24時間前以降（キャンセル料が発生する期間）は、日程変更もできません',
+  change_price_increase:
+    '変更後の料金が現在のご予約より高くなるため、この画面では変更できません。無料キャンセル期間中にキャンセルのうえ新しくご予約いただくか、店舗までお問い合わせください',
+  change_coupon_not_applicable:
+    'ご利用中のクーポンの条件に合わないため、この日時・お部屋には変更できません',
+  change_same_as_current: '現在のご予約と同じ内容です。別の日時またはお部屋をお選びください',
+  guest_count_exceeds_capacity:
+    'ご利用人数がお部屋の定員を超えるため、このお部屋には変更できません',
+  withdrawal_blocked:
+    'ご利用前のご予約があるため退会できません。ご予約のご利用またはキャンセル後にお手続きください',
+  receipt_not_available: 'このご予約の領収書はまだ発行できません',
+  recipient_required: '宛名を入力してください',
+  recipient_too_long: '宛名は100文字以内で入力してください',
+  legal_document_not_found: 'この文書は現在公開されていません',
+  maintenance: 'ただいまメンテナンス中です。しばらくしてから再度お試しください',
 }
 
 export function toUserMessage(error: unknown): string {

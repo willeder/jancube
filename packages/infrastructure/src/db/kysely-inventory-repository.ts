@@ -16,7 +16,15 @@ export class KyselyInventoryRepository implements InventoryRepository {
       this.db
         .selectFrom('room_groups as g')
         .innerJoin('room_types as t', 't.id', 'g.room_type_id')
-        .select(['g.id', 'g.code', 'g.name', 'g.booking_mode', 'g.sort_order', 't.capacity'])
+        .select([
+          'g.id',
+          'g.code',
+          'g.name',
+          'g.booking_mode',
+          'g.sort_order',
+          'g.room_type_id',
+          't.capacity',
+        ])
         .where('g.store_id', '=', storeId)
         .where('g.is_active', '=', 1)
         .execute(),
@@ -31,7 +39,14 @@ export class KyselyInventoryRepository implements InventoryRepository {
         .leftJoin('booking_assignments as a', (join) =>
           join.onRef('a.booking_id', '=', 'b.id').on('a.released_at', 'is', null),
         )
-        .select(['b.room_group_id', 'b.requested_room_id', 'a.room_id', 'b.starts_at', 'b.ends_at'])
+        .select([
+          'b.id',
+          'b.room_group_id',
+          'b.requested_room_id',
+          'a.room_id',
+          'b.starts_at',
+          'b.ends_at',
+        ])
         .where('b.store_id', '=', storeId)
         .where('b.starts_at', '<', to)
         .where('b.ends_at', '>', from)
@@ -61,6 +76,7 @@ export class KyselyInventoryRepository implements InventoryRepository {
         bookingMode: g.booking_mode === 'named' ? 'named' : 'group',
         capacity: g.capacity,
         sortOrder: g.sort_order,
+        roomTypeId: Number(g.room_type_id),
       })),
       rooms: rooms.map((r) => ({
         id: Number(r.id),
@@ -71,6 +87,7 @@ export class KyselyInventoryRepository implements InventoryRepository {
         sortOrder: r.sort_order,
       })),
       bookings: bookings.map((b) => ({
+        bookingId: Number(b.id),
         groupId: Number(b.room_group_id),
         roomId: b.room_id ?? b.requested_room_id ?? null,
         range: { start: b.starts_at, end: b.ends_at },

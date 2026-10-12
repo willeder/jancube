@@ -2,11 +2,20 @@
 
 import { useActionState, useEffect, useState } from 'react'
 import { FormError, SubmitButton } from '@/components/FormParts'
+import type { AuthFlow } from '@/lib/auth-flow'
 import { resendCodeAction, verifyCodeAction } from '@/server/auth-actions'
 
 const DIGITS = 6
 
-export function VerifyForm({ resendAfter }: { resendAfter: string }) {
+export function VerifyForm({
+  resendAfter,
+  flow = 'booking',
+  next,
+}: {
+  resendAfter: string
+  flow?: AuthFlow
+  next?: string
+}) {
   const [state, action, pending] = useActionState(verifyCodeAction, { error: null })
   const [resendState, resend, resending] = useActionState(resendCodeAction, { error: null })
   const [code, setCode] = useState('')
@@ -15,6 +24,8 @@ export function VerifyForm({ resendAfter }: { resendAfter: string }) {
   return (
     <div className="space-y-3">
       <form action={action} className="space-y-3">
+        <input type="hidden" name="flow" value={flow} />
+        {next && <input type="hidden" name="next" value={next} />}
         <div className="rounded-xl border border-line bg-white p-4">
           {/* One real input (SMS autofill, paste, screen readers); the boxes only display it. */}
           <label className="group relative mx-auto block w-fit">
@@ -56,6 +67,8 @@ export function VerifyForm({ resendAfter }: { resendAfter: string }) {
       </form>
 
       <form action={resend} className="text-center">
+        <input type="hidden" name="flow" value={flow} />
+        {next && <input type="hidden" name="next" value={next} />}
         <button
           type="submit"
           disabled={wait > 0 || resending}

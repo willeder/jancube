@@ -71,7 +71,10 @@ export default async function ConfirmPage() {
           </p>
         </section>
 
-        <HoldCountdown expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()} />
+        <HoldCountdown
+          expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
+          storeCode={hold.storeCode}
+        />
 
         <p className="text-xs text-sub">
           キャンセル: 24時間前まで無料 / 24時間以内50% /

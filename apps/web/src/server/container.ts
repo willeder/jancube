@@ -5,6 +5,7 @@ import { buildDeps } from './deps'
 import { adminFeatures } from './features/admin'
 import { adminBookingFeatures } from './features/admin-bookings'
 import { customerBookingFeatures } from './features/customer-booking'
+import { customerMyPageFeatures } from './features/customer-mypage'
 import { runtimeConfig } from './runtime-config'
 
 /**
@@ -32,6 +33,7 @@ function buildContainer(db: ReturnType<typeof createDb>) {
   const deps = buildDeps(db, runtimeConfig())
   return {
     ...customerBookingFeatures(deps),
+    ...customerMyPageFeatures(deps),
     ...adminFeatures(deps),
     ...adminBookingFeatures(deps),
   }

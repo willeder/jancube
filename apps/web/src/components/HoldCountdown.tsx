@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
-/** ⏳ 仮押さえ残り mm:ss — reloads the page when the hold runs out so the server shows the expiry. */
-export function HoldCountdown({ expiresAt }: { expiresAt: string }) {
+/** ⏳ 仮押さえ残り mm:ss — shows the C-21 hold-expired screen when the hold runs out. */
+export function HoldCountdown({ expiresAt, storeCode }: { expiresAt: string; storeCode?: string }) {
   const [left, setLeft] = useState(() => remaining(expiresAt))
 
   useEffect(() => {
@@ -12,11 +12,12 @@ export function HoldCountdown({ expiresAt }: { expiresAt: string }) {
       setLeft(ms)
       if (ms <= 0) {
         clearInterval(timer)
-        window.location.reload()
+        const query = storeCode ? `?store=${encodeURIComponent(storeCode)}` : ''
+        window.location.assign(`/booking/expired${query}`)
       }
     }, 1000)
     return () => clearInterval(timer)
-  }, [expiresAt])
+  }, [expiresAt, storeCode])
 
   const total = Math.max(0, Math.floor(left / 1000))
   const mm = String(Math.floor(total / 60)).padStart(2, '0')

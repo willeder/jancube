@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation'
+import { VerifyForm } from '@/components/auth/VerifyForm'
 import { HoldCountdown } from '@/components/HoldCountdown'
 import { ErrorPanel, StoreBar } from '@/components/StoreBar'
 import { withContainer } from '@/server/container'
 import { isDomainError, toUserMessage } from '@/server/errors'
 import { readHoldKey } from '@/server/hold-cookie'
 import { readChallengeId } from '@/server/session'
-import { VerifyForm } from './VerifyForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,7 +43,10 @@ export default async function VerifyPage({
           </p>
         )}
         <VerifyForm resendAfter={challenge.resendAfter.toISOString()} />
-        <HoldCountdown expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()} />
+        <HoldCountdown
+          expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
+          storeCode={hold.storeCode}
+        />
         <p className="text-xs text-sub">
           SMSが届かない場合は、番号をご確認のうえ再送してください。
           <a href="/booking/auth" className="font-bold text-brand-dark underline">

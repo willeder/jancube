@@ -33,3 +33,37 @@ export function weekdayIndex(date: string): number {
 }
 
 export { WEEKDAYS }
+
+/** "YYYY-MM-DD" → "2026/7/8(水)" (C-12 lists). */
+export function slashDateLabel(date: string): string {
+  const [y, m, d] = date.split('-').map(Number) as [number, number, number]
+  return `${y}/${m}/${d}(${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]})`
+}
+
+/** "YYYY-MM-DD" → "2026年7月8日(水)" (C-13 details). */
+export function fullDateLabel(date: string): string {
+  const [y, m, d] = date.split('-').map(Number) as [number, number, number]
+  return `${y}年${m}月${d}日(${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]})`
+}
+
+/** An instant in a store's time zone → "2026年7月8日 13:05". */
+export function localDateTime(instant: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('ja-JP', {
+    timeZone,
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(instant)
+}
+
+/** An instant in a store's time zone → "2026年7月8日". */
+export function localDate(instant: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('ja-JP', {
+    timeZone,
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(instant)
+}
