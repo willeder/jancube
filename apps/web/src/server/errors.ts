@@ -123,3 +123,75 @@ export function messageForCode(code: string | null | undefined): string | null {
 export function isDomainError(error: unknown, ...codes: string[]): error is DomainError {
   return error instanceof DomainError && (codes.length === 0 || codes.includes(error.code))
 }
+
+/**
+ * Staff-facing messages for the admin master screens (A-11〜A-23). Codes not listed here fall back
+ * to the shared messages above.
+ */
+const adminMessages: Record<string, string> = {
+  member_not_found: '会員が見つかりません（担当店舗の利用履歴がない会員は表示できません）',
+  invalid_member_status: '会員の状態を選択してください',
+  member_withdrawn: '退会済みの会員には操作できません',
+  note_required: '対応内容を入力してください（2,000文字以内）',
+  name_required: '名称を入力してください',
+  text_too_long: '入力が長すぎます',
+  invalid_request: '画面を再読み込みしてからやり直してください',
+  invalid_coupon:
+    'クーポンの条件が正しくありません。割引値・回数・期間・曜日・時間帯を確認してください',
+  invalid_coupon_code:
+    'クーポンコードは英数字・ハイフン・アンダースコアの3〜64文字で入力してください',
+  coupon_code_taken: 'このクーポンコードは既に使われています',
+  coupon_not_found: 'クーポンが見つかりません',
+  coupon_not_grantable: 'このクーポンは発行できません（停止中または期限切れ）',
+  invalid_segment: 'セグメントの条件が正しくありません',
+  invalid_price:
+    '料金の設定が正しくありません。金額・最低利用時間・パック（30分単位）を確認してください',
+  invalid_duration: '利用時間は30分単位で指定してください',
+  invalid_package: 'パックの時間は30分単位で指定してください',
+  invalid_price_code: '料金コードは英数字・ハイフン・アンダースコアの2〜32文字で入力してください',
+  price_code_taken: 'この料金コードは既に使われています',
+  price_profile_not_found: '料金プロファイルが見つかりません',
+  price_version_not_found: '公開済みの料金版が見つかりません',
+  price_not_set: 'この部屋には指定日時の料金が割り当てられていません',
+  rooms_required: '部屋を1つ以上選択してください',
+  invalid_store: '店舗の設定が正しくありません。必須項目と数値の範囲を確認してください',
+  invalid_store_code: '店舗コードは英数字・ハイフン・アンダースコアの2〜32文字で入力してください',
+  store_code_taken: 'この店舗コードは既に使われています',
+  invalid_time: '時刻は HH:MM 形式で入力してください（深夜は 26:00 のように入力）',
+  invalid_room: '部屋の設定が正しくありません',
+  invalid_code: 'コードは英数字・ハイフン・アンダースコアで入力してください',
+  code_taken: 'このコード（部屋番号）は既に使われています',
+  invalid_photo_url: '写真URLは http(s):// で始まるURLを入力してください',
+  room_type_not_found: '部屋タイプが見つかりません',
+  room_group_not_found: '部屋グループが見つかりません',
+  invalid_template: 'テンプレートの設定が正しくありません',
+  template_body_required: '本文を入力してください',
+  template_too_long: '本文が長すぎます（SMSは670文字まで）',
+  template_subject_required: 'メールの件名を入力してください（250文字以内）',
+  template_exists: 'この通知種別・チャネル・店舗のテンプレートは既にあります',
+  template_not_found: 'テンプレートが見つかりません',
+  template_variable_unknown:
+    'この通知種別では使えない差し込み項目があります。一覧の項目のみ使用できます',
+  invalid_grants: 'ロールを1つ以上、重複なく設定してください',
+  store_required: 'オーナー・本部管理者以外のロールは担当店舗を選択してください',
+  invalid_email: 'メールアドレスを正しく入力してください',
+  staff_not_found: 'スタッフが見つかりません',
+  staff_email_taken: 'このメールアドレスは既に登録されています',
+  last_owner: '有効なオーナーが1人もいなくなるため、この変更はできません',
+  cannot_disable_self: '自分自身のアカウントは無効にできません',
+  forbidden: 'この操作を行う権限がありません（担当店舗を確認してください）',
+}
+
+/** Japanese message for admin screens. */
+export function toAdminMessage(error: unknown): string {
+  if (error instanceof DomainError) {
+    const message =
+      adminMessages[error.code] ?? messages[error.code] ?? '操作を完了できませんでした'
+    // Name the offending placeholders, e.g. （bookingCode）.
+    return error.code === 'template_variable_unknown'
+      ? `${message}（${error.message.replace(/^unknown variables: /, '')}）`
+      : message
+  }
+  console.error(error)
+  return 'エラーが発生しました。時間をおいて再度お試しください'
+}

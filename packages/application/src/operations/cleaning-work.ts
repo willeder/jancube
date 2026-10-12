@@ -10,8 +10,8 @@ import {
   ROLE_PERMISSIONS,
   ROLES,
 } from '@jancube/domain'
+import type { StaffActor } from '../admin/admin-actor'
 import type { CleaningTask } from '../ports/operations'
-import type { StaffActor } from './admin-operations'
 import type { Operations, OperationsDeps } from './preparation'
 
 /** K-02 shows spot tasks marked urgent, and any spot task due within this many minutes. */

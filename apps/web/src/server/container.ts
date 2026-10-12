@@ -4,6 +4,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { buildDeps } from './deps'
 import { adminFeatures } from './features/admin'
 import { adminBookingFeatures } from './features/admin-bookings'
+import { adminMasterFeatures } from './features/admin-masters'
 import { customerBookingFeatures } from './features/customer-booking'
 import { customerMyPageFeatures } from './features/customer-mypage'
 import { lineReportsFeatures } from './features/line-reports'
@@ -40,6 +41,7 @@ function buildContainer(db: ReturnType<typeof createDb>) {
     ...adminBookingFeatures(deps),
     ...operationsFeatures(deps),
     ...lineReportsFeatures(deps),
+    ...adminMasterFeatures(deps),
   }
 }
 

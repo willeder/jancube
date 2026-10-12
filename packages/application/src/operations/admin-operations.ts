@@ -7,6 +7,7 @@ import {
   type StaffAccess,
   utcToLocal,
 } from '@jancube/domain'
+import type { StaffActor } from '../admin/admin-actor'
 import type {
   AccessKeyRecord,
   KeyEvent,
@@ -16,12 +17,6 @@ import type {
 } from '../ports/operations'
 import { formatLocalDateTime, isIssued, isLive } from './access-keys'
 import { assignmentPlanInput, type Operations, type OperationsDeps } from './preparation'
-
-/** The signed-in staff member performing an admin action. */
-export interface StaffActor {
-  readonly staffId: number
-  readonly access: StaffAccess
-}
 
 export interface RoomOption {
   readonly roomId: number
