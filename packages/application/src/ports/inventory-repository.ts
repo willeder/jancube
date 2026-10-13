@@ -8,6 +8,8 @@ export interface RoomGroupInfo {
   readonly bookingMode: 'group' | 'named'
   readonly capacity: number
   readonly sortOrder: number
+  /** room_types.id (coupon eligibility when a booking moves to another room type, C-14). */
+  readonly roomTypeId?: number
 }
 
 export interface RoomInfo {
@@ -21,6 +23,8 @@ export interface RoomInfo {
 
 /** A booking that occupies inventory (confirmed, or a draft whose hold has not expired). */
 export interface OccupyingBooking {
+  /** bookings.id, so a booking being changed (C-14) does not block its own new time. */
+  readonly bookingId?: number
   readonly groupId: number
   /** Assigned or requested (named) room; null while a group booking waits for assignment. */
   readonly roomId: number | null

@@ -1,88 +1,9 @@
 import { DomainError } from '@jancube/domain'
 import { describe, expect, it } from 'vitest'
-import type {
-  BookingRepository,
-  BookingSummary,
-  NewDraftBooking,
-} from '../ports/booking-repository'
-import { type HoldDeps, makeCreateHold, makeGetActiveHold, makeSetGuestCount } from './hold'
-import { fakeBookingDeps, jst } from './test-fixtures'
+import { makeCreateHold, makeGetActiveHold, makeSetGuestCount } from './hold'
+import { fakeHoldDeps as holdDeps, jst } from './test-fixtures'
 
 const D = '2026-11-10'
-
-function holdDeps(now = '2026-11-01T12:00:00+09:00') {
-  const base = fakeBookingDeps({ now })
-  const drafts: (NewDraftBooking & { id: number; status: BookingSummary['status'] })[] = []
-  let seq = 0
-  const bookings: BookingRepository = {
-    withInventoryLock: async (_g, _d, fn) =>
-      fn({
-        loadInventory: async (storeId, from, to, at) => {
-          const inv = await base.inventory.load(storeId, from, to, at)
-          const live = drafts.filter((d) => d.status === 'draft' && d.holdExpiresAt > at)
-          return {
-            ...inv,
-            bookings: [
-              ...inv.bookings,
-              ...live.map((d) => ({
-                groupId: d.roomGroupId,
-                roomId: d.requestedRoomId,
-                range: { start: d.start, end: d.end },
-              })),
-            ],
-          }
-        },
-        bookingState: async () => ({ status: 'draft', holdExpiresAt: null }),
-        confirm: async () => {},
-        recordUnconfirmablePayment: async () => ({ refundId: 0, idempotencyKey: '' }),
-        createDraft: async (draft) => {
-          seq++
-          drafts.push({ ...draft, id: seq, status: 'draft' })
-          return { id: seq, bookingCode: `JC-2026-${String(seq).padStart(6, '0')}` }
-        },
-      }),
-    findByRequestKey: async (key) => {
-      const d = drafts.find((x) => x.requestKey === key)
-      if (!d) return null
-      return {
-        id: d.id,
-        bookingCode: `JC-2026-${String(d.id).padStart(6, '0')}`,
-        status: d.status,
-        storeId: d.storeId,
-        storeCode: 'JC001',
-        storeName: '大阪本町店',
-        timezone: 'Asia/Tokyo',
-        businessDate: d.businessDate,
-        roomGroupId: d.roomGroupId,
-        roomTypeId: 1,
-        roomGroupName: '4麻ルーム',
-        requestedRoomId: d.requestedRoomId,
-        requestedRoomName: null,
-        capacity: 4,
-        start: d.start,
-        end: d.end,
-        guestCount: d.guestCount,
-        holdExpiresAt: d.holdExpiresAt,
-        memberId: null,
-        regularPrice: d.quote.regularPrice,
-        subtotal: d.quote.price,
-        discount: 0,
-        total: d.quote.price,
-      }
-    },
-    expireDraft: async (key) => {
-      for (const d of drafts) if (d.requestKey === key && d.status === 'draft') d.status = 'expired'
-    },
-    setGuestCount: async (key, n) => {
-      const d = drafts.find((x) => x.requestKey === key)
-      if (d) Object.assign(d, { guestCount: n })
-    },
-    assignMember: async () => {},
-  }
-  let keys = 0
-  const deps: HoldDeps = { ...base, bookings, newRequestKey: () => `key-${++keys}` }
-  return { deps, drafts }
-}
 
 const request = (start = '13:00', end = '17:00', laneKey = 'g:4MA') => ({
   storeCode: 'JC001',
@@ -147,5 +68,46 @@ describe('getActiveHold / setGuestCount (C-04)', () => {
     await makeSetGuestCount(deps)(hold.requestKey, 3)
     expect(drafts[0]?.guestCount).toBe(3)
     await expect(makeSetGuestCount(deps)(hold.requestKey, 5)).rejects.toBeInstanceOf(DomainError)
+  })
+})
+
+describe('createHold for a phone booking (A-06, source = proxy)', () => {
+  const proxy = {
+    staffId: 7,
+    guestCount: 3,
+    contact: {
+      memberId: null,
+      familyName: '山田',
+      givenName: '太郎',
+      phone: '+819012345678',
+      email: null,
+    },
+  }
+
+  it('holds for the proxy hold time and records the staff member and customer', async () => {
+    const { deps, drafts } = holdDeps()
+    await makeCreateHold(deps)({ ...request(), source: 'proxy', proxy })
+    expect(drafts[0]).toMatchObject({
+      source: 'proxy',
+      createdByStaffId: 7,
+      guestCount: 3,
+      contact: { familyName: '山田', phone: '+819012345678' },
+    })
+    expect(drafts[0]?.holdExpiresAt.toISOString()).toBe(
+      new Date('2026-11-01T12:30:00+09:00').toISOString(),
+    )
+  })
+
+  it('refuses more guests than the room holds', async () => {
+    const { deps } = holdDeps()
+    await expect(
+      makeCreateHold(deps)({ ...request(), source: 'proxy', proxy: { ...proxy, guestCount: 5 } }),
+    ).rejects.toMatchObject({ code: 'invalid_guest_count' })
+  })
+
+  it('needs the staff member and customer for a proxy hold, and only then', async () => {
+    const { deps } = holdDeps()
+    await expect(makeCreateHold(deps)({ ...request(), source: 'proxy' })).rejects.toThrow()
+    await expect(makeCreateHold(deps)({ ...request(), proxy })).rejects.toThrow()
   })
 })

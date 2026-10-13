@@ -8,3 +8,19 @@ SMSLINK_ENDPOINT=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_ACCOUNT_ID=
+# 32 random bytes, base64 (encrypts entry codes and notification destinations). Same value for jobs.
+DATA_ENCRYPTION_KEY=
+RESEND_API_KEY=
+# LINE (docs/line-setup.md). Without them, development uses a /liff stand-in form and a fixed webhook secret.
+LINE_CHANNEL_ACCESS_TOKEN=
+# C-21 maintenance screen for customer pages (1 = on). Optional text, e.g. the planned period.
+MAINTENANCE_MODE=
+MAINTENANCE_MESSAGE=
+# SmartRooming Connect API token (entrance lock codes). Without it, development generates codes
+# locally. Same values for the jobs worker. SMARTROOMING_TIME_ZONE: time zone of passcode periods.
+SMARTROOMING_API_TOKEN=
+SMARTROOMING_BASE_URL=
+SMARTROOMING_TIME_ZONE=
+LINE_CHANNEL_SECRET=
+LINE_LOGIN_CHANNEL_ID=
+LIFF_ID=

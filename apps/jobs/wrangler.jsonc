@@ -9,8 +9,13 @@
     // Cron times are UTC. Final times depend on open questions (day-before notice time: CQ-68).
     "crons": [
       "* * * * *", // every minute: release expired holds, due lock jobs
-      "0 9 * * *" // 18:00 JST: day-before batch (assign rooms → cleaning plan → codes → notify)
+      "0 11 * * *" // 20:00 JST: day-before batch (assign rooms → cleaning plan → codes → notify; tracker #9)
     ]
+  },
+  "vars": {
+    "APP_ENV": "development",
+    "APP_URL": "http://localhost:3010",
+    "EMAIL_FROM": "雀CUBE <no-reply@jancube.net>"
   },
   "hyperdrive": [
     {

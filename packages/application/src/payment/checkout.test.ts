@@ -136,6 +136,8 @@ function world(
         : null,
     cancelPayment: async () => {},
     succeededPayment: async () => null,
+    refundablePayments: async () => [],
+    createRefund: async () => 0,
     finishRefund: async () => {},
   }
 

@@ -1132,6 +1132,45 @@ export interface CouponVersions {
   weekday_mask: Generated<number>;
 }
 
+export interface FunnelEvents {
+  /**
+   * 経路
+   */
+  channel: Generated<string>;
+  /**
+   * 作成日時(UTC)
+   */
+  created_at: Generated<Date>;
+  /**
+   * 内部ID
+   */
+  id: Generated<number>;
+  /**
+   * 会員ID(ログイン中のみ)
+   */
+  member_id: number | null;
+  /**
+   * 発生日時(UTC)
+   */
+  occurred_at: Date;
+  /**
+   * ファネル段階
+   */
+  step: string;
+  /**
+   * 店舗ID
+   */
+  store_id: number | null;
+  /**
+   * UTM source
+   */
+  utm_source: string | null;
+  /**
+   * 匿名訪問者キー(Cookie)
+   */
+  visitor_key: string;
+}
+
 export interface InventoryDayLocks {
   /**
    * 営業日
@@ -1548,6 +1587,10 @@ export interface NotificationDeliveries {
    * 対象会員
    */
   member_id: number | null;
+  /**
+   * 送信文面暗号文(再送用)
+   */
+  message_ciphertext: Buffer | null;
   /**
    * 再試行日時
    */
@@ -3044,6 +3087,7 @@ export interface DB {
   coupon_stores: CouponStores;
   coupon_versions: CouponVersions;
   coupons: Coupons;
+  funnel_events: FunnelEvents;
   inventory_day_locks: InventoryDayLocks;
   key_events: KeyEvents;
   legal_documents: LegalDocuments;
