@@ -175,7 +175,7 @@ export class KyselyOperationsRepository implements OperationsRepository, HoldExp
       .selectFrom('booking_assignments as a')
       .innerJoin('bookings as b', 'b.id', 'a.booking_id')
       .innerJoin('stores as s', 's.id', 'b.store_id')
-      .select(['a.id', 'b.starts_at', 's.room_finalize_minutes'])
+      .select(['a.id', 'b.starts_at', 'b.business_date', 's.timezone', 's.room_finalize_minutes'])
       .where('a.released_at', 'is', null)
       .where('a.assignment_status', '=', 'provisional')
       .where('b.status', '=', 'confirmed')
@@ -185,6 +185,8 @@ export class KyselyOperationsRepository implements OperationsRepository, HoldExp
       assignmentId: Number(r.id),
       start: r.starts_at,
       finalizeMinutes: r.room_finalize_minutes,
+      businessDate: toLocalDate(r.business_date),
+      timezone: r.timezone,
     }))
   }
 

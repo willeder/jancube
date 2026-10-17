@@ -50,6 +50,7 @@ export const ROOM_ASSIGNED_TEMPLATE_VARIABLES = [
   'entryCode',
   'codeValidFrom',
   'codeValidTo',
+  'previousRoomName',
 ] as const
 
 /** Variables of the booking_canceled notice. */
@@ -124,7 +125,7 @@ export function makeOperations(deps: OperationsDeps) {
         await tx.assignRoom({
           bookingId: a.bookingId,
           roomId: a.roomId,
-          status: 'provisional',
+          status: 'final',
           source: a.source,
           staffId: null,
           reason: null,
@@ -196,6 +197,7 @@ export function makeOperations(deps: OperationsDeps) {
     store: OpsStore,
     key: AccessKeyRecord,
     resend = false,
+    previousRoomName = '',
   ) {
     if (!booking.assignment) return null
     const code = await keyOps.decryptCode(key)
@@ -205,6 +207,7 @@ export function makeOperations(deps: OperationsDeps) {
         entryCode: code,
         codeValidFrom: formatLocalDateTime(key.validFrom, store.timezone),
         codeValidTo: formatLocalDateTime(key.validTo, store.timezone),
+        previousRoomName: previousRoomName ? `変更前のお部屋：${previousRoomName}` : '',
       },
       secretValueNames: ['entryCode'],
       dedupSuffix: resend
@@ -230,6 +233,7 @@ export function makeOperations(deps: OperationsDeps) {
       booking = (await deps.ops.booking(bookingId)) ?? booking
     }
     await syncCleaning(store, booking.businessDate)
+    await finalizeAssignments()
     const key = await keyOps.ensureKey(booking, store)
     if (key.status === 'issued' && key.key) {
       await notifyRoomAssigned(booking, store, key.key)
@@ -283,6 +287,7 @@ export function makeOperations(deps: OperationsDeps) {
           await raiseUnassigned(store, plan.unassigned)
         }
         await syncCleaning(store, date)
+        await finalizeAssignments()
         for (const original of bookings) {
           try {
             const booking = (await deps.ops.booking(original.id)) ?? original
@@ -486,13 +491,17 @@ export function makeOperations(deps: OperationsDeps) {
     await prepareBooking(event.aggregateId)
   }
 
-  /** F-RM-05: provisional assignments become final shortly before the start. */
+  /** F-RM-05: provisional assignments become final at previous-day 20:00 local time. */
   async function finalizeAssignments() {
     const now = deps.clock.now()
     const candidates = await deps.ops.provisionalAssignments(
-      new Date(now.getTime() + 24 * 3_600_000),
+      new Date(now.getTime() + 48 * 3_600_000),
     )
-    const due = candidates.filter((c) => isFinalizeDue(c.start, now, c.finalizeMinutes))
+    const due = candidates.filter((c) =>
+      c.businessDate && c.timezone
+        ? now >= dayBeforeCutoff(c.businessDate, c.timezone)
+        : isFinalizeDue(c.start, now, c.finalizeMinutes),
+    )
     return due.length
       ? deps.ops.finalizeAssignments(
           due.map((c) => c.assignmentId),

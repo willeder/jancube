@@ -1,4 +1,4 @@
-# LINE 公式アカウント・LIFF 設定手順 (F-LINE-01〜05, L-01〜L-04)
+# LINE 公式アカウント・LIFF 設定手順 (F-LINE-01〜05, L-01〜L-05)
 
 LINE 側の設定と、本システムに設定する環境変数をまとめます。チャネルが未作成でも開発環境は
 スタンドイン（後述）で動作し、本番は環境変数を設定した時点で有効になります。
@@ -24,7 +24,7 @@ LINE 側の設定と、本システムに設定する環境変数をまとめま
      - 「Webhook の利用」ON、「検証」で 200 が返ることを確認
      - 「Webhook の再送」ON（処理失敗時に LINE が再送。重複は `webhook_events` で除外）
    - LINE Official Account Manager → 応答設定: 「Webhook」ON、「応答メッセージ」OFF
-     （定型案内は本システムが返信します）。スタッフがトークで個別対応する場合は「チャット」ON（課題 #15）。
+     （選択式の予約案内は本システムが返信します）。スタッフがトークで個別対応する場合は「チャット」ON（課題 #15）。
    - あいさつメッセージは Official Account Manager で設定（Figma L-01 の文面）。
 3. **LINE ログインチャネル**を作成（同じプロバイダー）。
    - チャネル ID → `LINE_LOGIN_CHANNEL_ID`
@@ -55,7 +55,7 @@ jobs（`apps/jobs`）: `LINE_CHANNEL_ACCESS_TOKEN`（L-04 通知のプッシュ�
 ## 4. 動作の流れ
 
 - **L-01 リッチメニュー**: `pnpm line:rich-menu --image <2500x843.png> --replace`
-  （定義: `scripts/line-rich-menu.json`。予約する → `https://liff.line.me/<LIFF_ID>`、
+  （定義: `scripts/line-rich-menu.json`。予約する → 「予約する」メッセージ（L-05 選択式予約開始）、
   予約確認 → `https://liff.line.me/<LIFF_ID>?next=%2Fmypage`、お問い合わせ → メッセージ送信）。
   `--dry-run` で作成内容だけ確認できます。メニュー画像はデザイン素材が必要です（3 等分）。
 - **L-02 `/liff`**: LIFF SDK（`https://static.line-scdn.net/liff/edge/2/sdk.js`）で初期化 →
@@ -65,10 +65,11 @@ jobs（`apps/jobs`）: `LINE_CHANNEL_ACCESS_TOKEN`（L-04 通知のプッシュ�
   - 未連携 → 署名付き Cookie（40 分）に LINE ユーザー ID を保持して `/liff/link`（L-03）へ。
   - アクセストークンがあれば友だち状態を取得（`friendship/v1/status`）。友だちでない場合は
     `friend_status = blocked`（LINE 通知は送らず、メール等にもフォールバックしない＝トラッカー決定）。
-- **L-03 `/liff/link`**: SMS 認証（C-05/C-06 と同じユースケース・同じ回数制限）→
-  既存会員はそのまま連携、新規は C-07 と同じ登録（`registration_source = 'line'`, 同意チャネル `liff`）→ 連携。
-  Web でログイン中の会員は SMS なしで「この会員情報と連携する」を選べます（C-17 からの連携）。
-  連携・解除は監査ログ（`member.line_link` / `member.line_unlink`、LINE ユーザー ID は記録しない）に残ります。
+- **L-03 `/liff/link`**: 初回は氏名・必須メール・規約/成人同意で LINE 単独会員を作成します。
+  電話番号・SMS は不要です。LINE ID はサーバーで検証した署名付き Cookie から取得します。
+  既存の電話番号会員との連携は折りたたみ欄から SMS 認証を利用できます。
+  LINE だけがログイン方法の会員は連携解除できません（ログイン不能を防止）。
+  電話番号会員が解除しても通知方法をメールへ自動変更しません。必要なら本人が設定を変更します。
 - **C-17 解除**: サーバーアクション `unlinkLineAction`（`apps/web/src/server/line-actions.ts`）。
   C-17 の「LINE と連携する」ボタンは `/liff/link` にリンクしてください
   （未認証の場合は LINE ログインを経由して戻ります）。
@@ -78,12 +79,12 @@ jobs（`apps/jobs`）: `LINE_CHANNEL_ACCESS_TOKEN`（L-04 通知のプッシュ�
   ```ts
   c.createHold({ ...input, ...(await readBookingAttribution()) })
   ```
-  ※ `createHoldAction`（booking-actions.ts）への 1 行の組み込みは予約フロー担当側で行ってください。
+  LINE トーク内の予約は `acquisition_source = line_chat` として保存します。
 - **Webhook `/api/line/webhook`**: `x-line-signature`（チャネルシークレットによる HMAC-SHA256・Base64）を
   生ボディで検証 → イベントごとに `webhook_events`（provider `line`、`webhookEventId` で重複排除）→
   follow = `friend` / unfollow = `blocked`（古いイベントで新しい状態を上書きしない）→
-  メッセージには定型案内を返信（自然文での予約・L-05 チャット内予約は対象外）。
-- **L-04 通知**: 通知エンジン（`makeNotify`）が「LINE 連携済み・ブロックなし」なら LINE を選び、jobs Worker が
+  メッセージ/ポストバックは L-05 選択式予約へ。自然文の質問はスタッフ引き継ぎへ。
+- **L-04 通知**: 通知エンジン（`makeNotify`）が本人のメール/LINE 設定に従い、jobs Worker が
   `LineMessagingSender` でプッシュ送信します。文面は A-21 通知テンプレートで管理します。
 
 ## 5. 開発環境（チャネル未作成）
@@ -100,8 +101,11 @@ jobs（`apps/jobs`）: `LINE_CHANNEL_ACCESS_TOKEN`（L-04 通知のプッシュ�
 
 ## 6. 未決事項
 
-- 課題 #12/#13（L-05 チャット内の選択式予約、電話番号なしの LINE 単独会員 `identity_kind = 'line'`）は
-  方針のみで詳細未決のため未実装。現状の LINE 連携は SMS 認証で既存/新規の電話番号会員に紐づけます。
+- 選択式予約と電話番号なし会員は実装・ローカル DB 検証済みです。実チャネルでの確認はアカウント待ちです。
+- スタッフ引き継ぎ: A-25 の line_handoff アラートを確認し、公式アカウントのチャットで対応します。
+  引き継ぎ中は自動応答を止めます。お客様が「予約する」を送ると再開します（勝手なタイムアウト再開なし）。
+- ボット選択状態は暗号化 DB に保存し、操作ごとに古いボタンを無効化します。ボット状態の有効期間は60分です。
+- 決済は署名済み Stripe Webhook で確定します。ボタンを押しただけでは確定しません。
 - FR-3.5 / CQ-26: LIFF 内から外部決済（Stripe Checkout）への遷移方式は未決。
 - CQ-56: 公式アカウントのプラン・配信数（プッシュ通知の費用）。
 - `coupon_versions.grant_trigger = 'line_friend'`（友だち追加クーポン）は未実装。

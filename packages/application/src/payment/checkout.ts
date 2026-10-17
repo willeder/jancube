@@ -6,8 +6,10 @@ import {
   DomainError,
   evaluateCoupon,
   minuteOfBusinessDay,
+  normalizeRequiredEmail,
   weekdayOf,
 } from '@jancube/domain'
+import { assertCanBook } from '../auth/sign-in'
 import { buildLanes, laneLoad } from '../booking/booking-context'
 import { makeGetActiveHold } from '../booking/hold'
 import type { BookingRepository, BookingSummary } from '../ports/booking-repository'
@@ -137,6 +139,10 @@ export function makeStartCheckout(deps: CheckoutDeps) {
     readonly cancelUrl: string
   }): Promise<StartCheckoutResult> {
     const hold = await requireMemberHold(deps, input.requestKey, input.memberId)
+    const member = await deps.members.findById(input.memberId)
+    if (!member) throw new DomainError('member_not_found', 'sign in again')
+    assertCanBook(member)
+    normalizeRequiredEmail(member.email)
     const now = deps.clock.now()
 
     let coupon: { grantId: number; discount: number } | null = null
@@ -177,7 +183,6 @@ export function makeStartCheckout(deps: CheckoutDeps) {
       return { kind: 'confirmed' }
     }
 
-    const member = await deps.members.findById(input.memberId)
     const session = await deps.gateway.createCheckout({
       idempotencyKey,
       amount: prepared.total,

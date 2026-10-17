@@ -1,0 +1,106 @@
+Jancube beta implementation handover — 17 October 2026
+
+Target: 31 October BETA. This work does not constitute a production launch or live-provider sign-off.
+Authority: Yano's confirmed client decisions and the 13/15 October tracker updates take precedence
+over earlier wireframes. No client accounts, messages, payments or deployment were changed.
+
+Implemented
+1. LINE-only registration with name, required email, consent versions and registration coupons.
+   No phone/SMS requirement. Existing phone-member linking remains available. A LINE-only member
+   cannot unlink their sole login method. Concurrent registrations resolve to one member.
+2. LINE choice booking: store → date → room/type → start/end/price → guests → confirmation and
+   cancellation-policy consent → coupon → payment method → hosted checkout. The existing booking
+   and payment use cases remain the source of truth. Payment confirmation is server-side.
+   State is encrypted in the database; old/cross-user buttons and duplicate events are handled.
+   Update the rich menu after the client supplies LINE access and approved menu artwork.
+3. Staff handoff: unrecognized messages / the staff button raise a persistent A-25 alert and mute
+   automation. Staff reply in LINE Official Account Manager. The customer sends 予約する to resume.
+   No automatic handoff timeout has been invented. Natural-language booking is excluded.
+4. Assignment becomes final at previous-day 20:00 store-local time (JST for current stores).
+   Same-day bookings catch up after payment; manual reassignment cannot revert a final room.
+   Same-day immediate use bills from the current half-hour boundary (13:08 → 13:00).
+   Existing stores are migrated to the agreed 30-minute cleaning buffer; key margins stay ±15 minutes.
+5. Explicit email/LINE notification preference. Blocked/unlinked LINE does not fall back to email.
+   SMS is restricted to explicit proxy payment links in the notification engine (OTP has its own path).
+   Customer login cookies last 365 days; staff sessions retain their separate existing policy.
+6. Owner/admin/cleaning roles. Owners manage owner/admin accounts; admins can manage cleaning staff.
+   Server-side checks prevent promotion or disabling privileged accounts by another admin.
+   Former store_staff grants become store-scoped admin grants without widening their store scope.
+7. Owned booking detail supports room location and the first configured room photo as door guidance.
+   Staff configure room labels, photo URLs and location. Copy/native-share includes booking name,
+   actual local calendar dates/times, store/address, room and entry code/instructions. Secrets become
+   shareable only after disclosure and while the booking is active; no public secret-bearing URL.
+   Reassignment notices can identify the previous room. Template wording remains editable in A-21.
+8. Persistent end+15-minute thank-you/payment-completion notification. Changed/canceled bookings
+   invalidate obsolete scheduled events. This feature NEVER performs a post-use charge.
+9. Production configuration rejects missing payment/email configuration and invalid public URLs.
+   Development adapters remain restricted to development; real account setup is still required.
+
+Additional correctness fix
+The real TiDB test exposed stale availability reads after a waiting inventory lock. Inventory mutation
+transactions now use READ COMMITTED, plus stable room-group locks shared by holds, confirmation,
+changes and room-block operations. Group locks also cover overlapping business dates; different
+groups/stores remain independent. Inventory reads include neighboring cleaning-buffer periods.
+This prevents the observed overbooking race. Verify TiDB pessimistic mode and CHECK enforcement
+on the client staging cluster, and rerun concurrency tests through Hyperdrive before external beta.
+
+Local acceptance performed
+- Full lint, type checks, dependency boundaries and automated regression suite.
+- MySQL 8.4 and TiDB 8.5.7: migrations, dummy seed, foreign-key/CHECK enforcement.
+- 12 simultaneous holds for five rooms: five successes / seven unavailable rejections.
+- 12 simultaneous requests for the last room: exactly one success; neighboring-date serialization.
+- Eight concurrent LINE registrations: one account, three consent records and idempotent coupons.
+- Real database adapters: encrypted LINE selections, hold, coupon, development checkout,
+  duplicate payment confirmation, owned detail, delayed outbox and blocked-LINE no-fallback.
+- Browser: LINE-only registration; required email/consent; one-year cookie; notification preference
+  save; owned room guidance and clipboard share at 390px and 1280px, without overflow/page errors.
+- Native application build; Cloudflare bundle verification tracked in beta-readiness.txt.
+- CI now includes isolated MySQL/TiDB migration, constraints, concurrency and beta acceptance jobs.
+  The workflow itself has not been pushed or executed on GitHub.
+
+Repeatable checks
+pnpm check
+pnpm build
+DATABASE_URL=<isolated local URL ending /jancube_beta_verify> pnpm exec tsx db/check-beta.ts
+DATABASE_URL=<local URL> pnpm db:check:concurrency
+Cloudflare Windows build: use scripts/check-build-linux.sh in a fresh node:24-bookworm Docker
+container with the repository read-only at /src. This packages web and dry-runs jobs; never deploys.
+Never run db/seed.ts against client staging/production: all seed masters and staff are dummy data.
+
+Migration / release order
+1. Back up the staging database and encryption keys. Confirm CHECK constraints and pessimistic mode.
+2. Pause web writes and scheduled jobs for the coordinated beta migration. The role contract changes
+   in 0010, so this update is not a rolling mixed-version deployment. Migrations are 0008–0013.
+3. Apply migrations, deploy matching web/jobs versions, verify secrets/bindings, then resume jobs.
+   Do not roll back only application code across the role migration without a reviewed recovery plan.
+4. Review existing reservations against the new cleaning buffer; preserve reservations and address
+   planner alerts manually if legacy times no longer fit. Replace all dummy store/staff/legal data.
+5. Publish approved A-21 templates. Existing customized room-assigned templates are preserved;
+   add customerName, roomLocation, roomPhotoUrl, entryGuideText and previousRoomName as required.
+   An empty database has no staff publisher until initial owner setup; publish templates after setup.
+6. Configure LINE webhook/LIFF/rich menu; ensure the two channels belong to the same provider.
+   Keep Official Account automatic replies off and chat/webhooks on to avoid competing replies.
+7. Run staging acceptance, provider failure recovery, device tests and client UAT. Get Yano's beta
+   acceptance before making the environment available to beta customers.
+
+Blocked by access / client materials
+Cloudflare and TiDB staging; LINE channels/provider/LIFF; Stripe test keys/method access/webhook;
+Resend sender/domain; SMSLINK actual API specification/authentication; entrance-lock API, real
+device and overlapping-code capacity testing. Actual door photos/labels, floor/entry instructions,
+store/pricing/coupon masters, staff assignments and approved legal/template copy are required.
+
+Blocked by decisions
+Customer Google/LINE/phone identity scope and staff Google access; staff 2FA method; coupon
+combination/order and restoration after fee-bearing cancellation; web/proxy hold expiry and late
+payment policy; receipt fields/rounding/refund wording; cleaning-photo adoption/placement and
+retention; remaining same-day/uncleaned-room operations and CSV/metrics/alerts definitions.
+Existing provisional behavior is retained for these areas; it must not be presented as client-approved.
+
+Remaining account-dependent acceptance
+Stripe test card/PayPay success, cancel, duplicate/late webhooks and refunds; real LINE/LIFF checkout
+return and chosen-channel delivery; real OTP/SMS links and email deliverability; lock issue/revoke,
+expiry, overlapping reservations, physical entry and failure recovery; staging backup restoration,
+permissions and monitoring; device/browser journeys and Yano/client beta approval.
+
+Initially excluded: extension, checkout, WordPress embedding/plugin/code generator and equipment
+automation. Existing legacy embed routes are retained but are not a new beta deliverable.

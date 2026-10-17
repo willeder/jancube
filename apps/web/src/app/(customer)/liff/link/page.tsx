@@ -3,8 +3,7 @@ import Link from 'next/link'
 import { withContainer } from '@/server/container'
 import { readPendingLineLink } from '@/server/line-session'
 import { readSessionMemberId } from '@/server/session'
-import { LinkPhoneForm, LinkSignedInForm } from './LinkForms'
-import { LinkSteps } from './LinkSteps'
+import { LinkPhoneForm, LinkProfileForm, LinkSignedInForm } from './LinkForms'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,13 +57,12 @@ export default async function LiffLinkPage() {
   return (
     <main className="mx-auto max-w-md space-y-4 px-4 py-6">
       <div>
-        <h1 className="text-lg font-bold">LINEアカウントと会員情報の連携</h1>
+        <h1 className="text-lg font-bold">LINEでご利用を始める</h1>
         <p className="mt-1 text-sm text-sub">
-          初回のみ、携帯電話番号の確認（SMS認証）でLINEアカウントと会員情報を紐づけます。
-          次回からはLINEを開くだけで、認証なしでご予約いただけます
+          電話番号・SMS認証なしでご登録いただけます。お名前とメールアドレスをご登録ください。
+          すでに会員の方は、既存の会員情報と連携することもできます
         </p>
       </div>
-      <LinkSteps current={1} />
 
       {member && (
         <section className="space-y-3 rounded-xl border border-brand bg-white p-4 text-sm">
@@ -80,9 +78,17 @@ export default async function LiffLinkPage() {
         </section>
       )}
 
-      <LinkPhoneForm />
+      {!member && <LinkProfileForm phoneFree />}
+      <details className="rounded-xl border border-line bg-white p-4 text-sm">
+        <summary className="cursor-pointer font-bold">
+          登録済みの電話番号で会員情報と連携する
+        </summary>
+        <div className="mt-3">
+          <LinkPhoneForm />
+        </div>
+      </details>
       <p className="text-xs text-sub">
-        連携はいつでもマイページから解除できます。解除しても会員情報・ご予約はそのまま残ります
+        別のログイン方法がある場合、連携はマイページから解除できます。解除しても会員情報・ご予約はそのまま残ります
       </p>
     </main>
   )

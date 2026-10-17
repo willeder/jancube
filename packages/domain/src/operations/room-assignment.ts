@@ -1,5 +1,6 @@
 import { findAllocation, type RoomSchedule } from '../inventory/allocation'
 import { addMinutes, overlaps, type TimeRange } from '../time/time-range'
+import { dayBeforeCutoff, localDateOf } from './access-key'
 
 /**
  * Day-before room assignment (F-RM-04) and manual reassignment checks (F-RM-06).
@@ -206,8 +207,7 @@ export function checkRoomChange(
 export const DEFAULT_ROOM_FINALIZE_MINUTES = 30
 
 export function isFinalizeDue(start: Date, now: Date, finalizeMinutes: number | null): boolean {
-  return (
-    now.getTime() >=
-    addMinutes(start, -(finalizeMinutes ?? DEFAULT_ROOM_FINALIZE_MINUTES)).getTime()
-  )
+  // The former per-store minute offset no longer overrides the agreed previous-day 20:00 rule.
+  void finalizeMinutes
+  return now >= dayBeforeCutoff(localDateOf(start, 'Asia/Tokyo'), 'Asia/Tokyo')
 }

@@ -35,9 +35,11 @@ interface RawEvent {
   replyToken?: unknown
   source?: { userId?: unknown }
   deliveryContext?: { isRedelivery?: unknown }
+  message?: { type?: unknown; text?: unknown }
+  postback?: { data?: unknown }
 }
 
-const KNOWN = new Set(['follow', 'unfollow', 'message'])
+const KNOWN = new Set(['follow', 'unfollow', 'message', 'postback'])
 
 async function toEvent(raw: RawEvent): Promise<LineWebhookEvent> {
   const rawType = typeof raw.type === 'string' ? raw.type : 'unknown'
@@ -47,12 +49,28 @@ async function toEvent(raw: RawEvent): Promise<LineWebhookEvent> {
       typeof raw.webhookEventId === 'string' && raw.webhookEventId
         ? raw.webhookEventId.slice(0, 191)
         : await sha256Hex(JSON.stringify(raw)),
-    type: KNOWN.has(rawType) ? (rawType as 'follow' | 'unfollow' | 'message') : 'other',
+    type:
+      rawType === 'postback'
+        ? 'message'
+        : KNOWN.has(rawType)
+          ? (rawType as 'follow' | 'unfollow' | 'message')
+          : 'other',
     rawType,
-    userId: typeof raw.source?.userId === 'string' ? raw.source.userId : null,
+    userId:
+      (raw.source as { type?: string })?.type === 'group' ||
+      (raw.source as { type?: string })?.type === 'room'
+        ? null
+        : typeof raw.source?.userId === 'string'
+          ? raw.source.userId
+          : null,
     replyToken: typeof raw.replyToken === 'string' ? raw.replyToken : null,
     timestamp: new Date(typeof raw.timestamp === 'number' ? raw.timestamp : Date.now()),
     isRedelivery: raw.deliveryContext?.isRedelivery === true,
+    text:
+      raw.message?.type === 'text' && typeof raw.message.text === 'string'
+        ? raw.message.text.slice(0, 5000)
+        : null,
+    postbackData: typeof raw.postback?.data === 'string' ? raw.postback.data.slice(0, 300) : null,
   }
 }
 

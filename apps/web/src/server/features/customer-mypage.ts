@@ -17,6 +17,7 @@ import {
   makeQuoteBookingChange,
   makeQuoteMyCancellation,
   makeUpdateMyEmail,
+  makeUpdateMyNotificationChannel,
   makeWithdrawMember,
   type ReceiptIssuer,
 } from '@jancube/application'
@@ -82,6 +83,7 @@ export function customerMyPageFeatures(deps: Deps) {
     listMyCoupons: makeListMyCoupons(myPage),
     getMyAccount: makeGetMyAccount(myPage),
     updateMyEmail: makeUpdateMyEmail(myPage),
+    updateMyNotificationChannel: makeUpdateMyNotificationChannel(myPage),
     withdrawMember: makeWithdrawMember(myPage),
     getChangeableBooking: makeGetChangeableBooking(change),
     getChangeAvailability: makeGetChangeAvailability(change),

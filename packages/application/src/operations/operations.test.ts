@@ -641,17 +641,20 @@ describe('A-07 manual reassignment (F-RM-06 / F-RM-07)', () => {
       urgent: true,
       status: 'pending',
     })
-    expect(w.notices.at(-1)).toMatchObject({ event: 'room_assigned', dedup: '1:3' })
+    expect(w.notices.at(-1)).toMatchObject({
+      event: 'room_assigned',
+      dedup: `resend:${jst(D, 10).getTime()}`,
+      values: expect.objectContaining({ previousRoomName: '変更前のお部屋：Room1' }),
+    })
   })
 
-  it('finalizes provisional rooms 30 minutes before the start (F-RM-05)', async () => {
+  it('notifies with a final room at the previous-day batch, rather than waiting until use', async () => {
     const w = world(jst('2026-11-09', 20), [booking(1, 13, 16)])
     await w.operations.runDayBeforeBatch()
-    w.setNow(jst(D, 12, 29))
-    expect(await w.operations.finalizeAssignments()).toBe(0)
-    w.setNow(jst(D, 12, 30))
-    expect(await w.operations.finalizeAssignments()).toBe(1)
     expect(w.assignments[0]?.status).toBe('final')
+    expect(w.notices.some((n) => n.event === 'room_assigned')).toBe(true)
+    w.setNow(jst(D, 12, 30))
+    expect(await w.operations.finalizeAssignments()).toBe(0)
   })
 })
 

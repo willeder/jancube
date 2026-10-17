@@ -146,6 +146,20 @@ export async function updateEmailAction(_prev: FormState, form: FormData): Promi
   redirect('/mypage/account?saved=1')
 }
 
+/** C-17: customer's reservation notification choice. */
+export async function updateNotificationChannelAction(
+  _prev: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const memberId = await requireMember('/mypage/account')
+  try {
+    await withContainer((c) => c.updateMyNotificationChannel(memberId, text(form, 'channel')))
+  } catch (error) {
+    return { error: toUserMessage(error) }
+  }
+  redirect('/mypage/account?saved=1')
+}
+
 /** C-17 「退会する」 (F-AUTH-07): confirmed with a checkbox; the session ends afterwards. */
 export async function withdrawAction(_prev: FormState, form: FormData): Promise<FormState> {
   const memberId = await requireMember('/mypage/account')

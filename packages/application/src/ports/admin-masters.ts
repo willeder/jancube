@@ -435,6 +435,7 @@ export interface RoomPhoto {
 }
 
 export interface RoomDraft {
+  readonly locationText?: string | null
   readonly name: string
   readonly description: string | null
   readonly operatingStatus: RoomStatus

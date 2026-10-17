@@ -41,9 +41,10 @@ export function ProfileForm({ flow = 'booking', next }: { flow?: AuthFlow; next?
         </div>
         <p className="text-xs text-sub">※ 本人確認の必須要件ではありません</p>
         <label className="block">
-          <span className="font-bold">メールアドレス（任意）</span>
+          <span className="font-bold">メールアドレス（必須）</span>
           <input
             name="email"
+            required
             type="email"
             autoComplete="email"
             placeholder="taro@example.com"

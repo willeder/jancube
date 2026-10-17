@@ -15,6 +15,8 @@ export interface BookingRules {
   readonly minimumMinutes: number
   /** Bookings must start at least this many minutes from now. */
   readonly leadMinutes: number
+  /** Permit immediate use, billed from the current half-hour boundary. */
+  readonly allowImmediate?: boolean
 }
 
 export interface SlotState {
@@ -32,7 +34,7 @@ export function slotStates(
   now: Date,
   rules: BookingRules,
 ): SlotState[] {
-  const earliest = addMinutes(now, rules.leadMinutes).getTime()
+  const earliest = earliestBookableStart(now, rules).getTime()
   const states: SlotState[] = []
   for (let t = window.opensAt; t < window.closesAt; t = addMinutes(t, SLOT_MINUTES)) {
     const cell = createTimeRange(t, addMinutes(t, SLOT_MINUTES))
@@ -98,6 +100,14 @@ function isStartAllowed(
   return (
     start >= window.opensAt &&
     start < window.closesAt &&
-    start.getTime() >= addMinutes(now, rules.leadMinutes).getTime()
+    start.getTime() >= earliestBookableStart(now, rules).getTime()
   )
+}
+
+/** Immediate reservations are charged from the preceding 30-minute boundary (13:08 → 13:00). */
+export function earliestBookableStart(now: Date, rules: BookingRules): Date {
+  const lead = addMinutes(now, rules.leadMinutes)
+  return rules.allowImmediate
+    ? new Date(Math.floor(lead.getTime() / (SLOT_MINUTES * 60_000)) * SLOT_MINUTES * 60_000)
+    : lead
 }

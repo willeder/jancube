@@ -26,6 +26,20 @@ const load: AllocationInput = {
 }
 
 describe('slotStates', () => {
+  it('allows immediate 13:08 use billed from 13:00 while enforcing capacity and earlier-slot rejection', () => {
+    const immediate = { minimumMinutes: 60, leadMinutes: 0, allowImmediate: true }
+    const empty = { ...load, rooms: [{ roomId: 1, bookings: [], blocks: [] }], bufferMinutes: 30 }
+    const at = t('13:08')
+    expect(() =>
+      assertBookable(window, empty, createTimeRange(t('13:00'), t('14:00')), at, immediate),
+    ).not.toThrow()
+    expect(() =>
+      assertBookable(window, empty, createTimeRange(t('12:30'), t('14:00')), at, immediate),
+    ).toThrow()
+    expect(() =>
+      assertBookable(window, load, createTimeRange(t('13:00'), t('14:00')), at, immediate),
+    ).toThrow()
+  })
   it('covers the opening window in 30-minute cells', () => {
     const cells = slotStates(window, load, now, rules)
     expect(cells).toHaveLength(28) // 10:00–24:00

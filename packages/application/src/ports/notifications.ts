@@ -11,6 +11,7 @@ export interface PublishedTemplate {
 
 /** Contact points of a member for notifications. */
 export interface MemberContact {
+  readonly notificationChannel?: 'email' | 'line'
   readonly memberId: number
   readonly email: string | null
   readonly phone: string | null
@@ -87,6 +88,10 @@ export interface BookingNotificationView {
   readonly roomTypeName: string
   /** Assigned room (after the day-before assignment) or the named room; null before assignment. */
   readonly roomName: string | null
+  readonly customerName?: string | null
+  readonly roomLocation?: string | null
+  readonly roomPhotoUrl?: string | null
+  readonly entryGuideText?: string | null
   readonly guestCount: number
   readonly total: number
 }

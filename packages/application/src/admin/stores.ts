@@ -257,6 +257,7 @@ function assertRoomDraft(d: RoomDraft): RoomDraft {
     ...d,
     name: requireText(d.name, 'name_required', 100),
     description: optionalText(d.description, 2000),
+    locationText: optionalText(d.locationText, 500),
   }
 }
 

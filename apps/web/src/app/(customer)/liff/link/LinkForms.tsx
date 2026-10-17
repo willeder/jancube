@@ -8,6 +8,7 @@ import {
   liffSendCodeAction,
   liffVerifyCodeAction,
   linkSignedInMemberAction,
+  registerLineOnlyAction,
 } from '@/server/line-actions'
 
 const field = 'mt-1.5 block w-full rounded-lg border border-line px-3 py-2.5 text-base'
@@ -89,8 +90,11 @@ export function LinkVerifyForm({ resendAfter }: { resendAfter: string }) {
 }
 
 /** L-03 step 3 for new customers (same fields as C-07). */
-export function LinkProfileForm() {
-  const [state, action, pending] = useActionState(liffRegisterAction, { error: null })
+export function LinkProfileForm({ phoneFree = false }: { phoneFree?: boolean }) {
+  const [state, action, pending] = useActionState(
+    phoneFree ? registerLineOnlyAction : liffRegisterAction,
+    { error: null },
+  )
   return (
     <form action={action} className="space-y-3">
       <div className="space-y-3 rounded-xl border border-line bg-white p-4 text-sm">
@@ -119,9 +123,10 @@ export function LinkProfileForm() {
           </label>
         </div>
         <label className="block">
-          <span className="font-bold">メールアドレス（任意）</span>
+          <span className="font-bold">メールアドレス（必須）</span>
           <input
             name="email"
+            required
             type="email"
             autoComplete="email"
             placeholder="taro@example.com"

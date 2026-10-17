@@ -11,6 +11,13 @@ export function normalizeOptionalEmail(input: string | null | undefined): string
   return email
 }
 
+/** Required for registration and account updates under the October notification decision. */
+export function normalizeRequiredEmail(input: string | null | undefined): string {
+  const email = normalizeOptionalEmail(input)
+  if (!email) throw new DomainError('email_required', 'enter your email address')
+  return email
+}
+
 /**
  * F-AUTH-07 退会: not possible while the member still has upcoming confirmed bookings (they must be
  * used or cancelled first, so refunds and notifications still reach the customer).

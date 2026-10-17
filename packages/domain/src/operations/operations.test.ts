@@ -178,9 +178,9 @@ describe('keys and timing', () => {
       true,
     )
   })
-  it('assignments become final 30 minutes before the start by default', () => {
-    expect(isFinalizeDue(h(14), h(13, 29), null)).toBe(false)
-    expect(isFinalizeDue(h(14), h(13, 30), null)).toBe(true)
-    expect(isFinalizeDue(h(14), h(13, 0), 60)).toBe(true)
+  it('finalizes at previous-day 20:00 even when a legacy minute offset exists', () => {
+    const start = new Date('2026-11-10T14:00:00+09:00')
+    expect(isFinalizeDue(start, new Date('2026-11-09T19:59:59+09:00'), null)).toBe(false)
+    expect(isFinalizeDue(start, new Date('2026-11-09T20:00:00+09:00'), 60)).toBe(true)
   })
 })

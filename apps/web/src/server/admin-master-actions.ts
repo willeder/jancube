@@ -224,6 +224,7 @@ export async function saveRoomGroupAction(
 const roomDraft = (form: FormData) => ({
   name: text(form, 'name'),
   description: optional(form, 'description'),
+  locationText: optional(form, 'locationText'),
   operatingStatus: text(form, 'operatingStatus') as 'active' | 'paused' | 'broken',
   isNamedBooking: checked(form, 'isNamedBooking'),
   isVipCandidate: checked(form, 'isVipCandidate'),

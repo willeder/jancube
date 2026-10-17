@@ -8,8 +8,8 @@ import { makeRetryRefund, type PaymentHistoryDeps } from './payments'
 import { makeStaffCancelBooking } from './staff-cancel'
 
 const owner: StaffAccess = { staffId: 1, grants: [{ role: 'owner', storeId: null }] }
-const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'store_staff', storeId: 1 }] }
-const otherStore: StaffAccess = { staffId: 8, grants: [{ role: 'store_staff', storeId: 2 }] }
+const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'admin', storeId: 1 }] }
+const otherStore: StaffAccess = { staffId: 8, grants: [{ role: 'admin', storeId: 2 }] }
 const now = new Date('2026-11-09T10:00:00Z')
 
 describe('retryRefund (A-26)', () => {

@@ -129,12 +129,17 @@ export function makeLinkLineAccount(deps: Omit<LineAccountDeps, 'verifier'>) {
   }
 }
 
-/** C-17 「LINE連携を解除」: the member stays a member and keeps phone/email notifications. */
+/** Unlink only when a separate phone login remains; never strand a phone-free LINE member. */
 export function makeUnlinkLineAccount(deps: Pick<LineAccountDeps, 'links' | 'members' | 'audit'>) {
   return async function unlinkLineAccount(memberId: number): Promise<{ unlinked: boolean }> {
+    const member = await deps.members.findById(memberId)
+    if (!member?.phone)
+      throw new DomainError(
+        'line_only_account',
+        'a separate sign-in method is required before unlinking LINE',
+      )
     const removed = await deps.links.remove(memberId)
     if (!removed) return { unlinked: false }
-    const member = await deps.members.findById(memberId)
     await deps.audit.record({
       actor: { type: 'member', memberId },
       action: 'member.line_unlink',

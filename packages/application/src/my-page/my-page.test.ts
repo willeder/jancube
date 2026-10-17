@@ -104,6 +104,7 @@ function world(now: string, over: Partial<MyPageRepository> = {}) {
     couponGrants: async () => [],
     account: async (id) => (id === 5 ? account : null),
     updateEmail: async () => {},
+    updateNotificationChannel: async () => {},
     upcomingBookingCount: async () => 0,
     withdraw: async (id) => void log.withdrawn.push(id),
     ...over,
@@ -121,6 +122,31 @@ function world(now: string, over: Partial<MyPageRepository> = {}) {
 }
 
 describe('my page (C-12)', () => {
+  it('shares actual local calendar dates for after-midnight business-day bookings', async () => {
+    const w = world('2026-11-10T12:00:00Z', {
+      bookingDetail: async () =>
+        detail({ start: new Date('2026-11-10T16:00:00Z'), end: new Date('2026-11-10T17:00:00Z') }),
+    })
+    const view = await makeGetMyBookingDetail(w.deps)('JC-2026-000001', 5)
+    expect(view.shareText).toContain('2026/11/11 01:00')
+    expect(view.shareText).toContain('2026/11/11 02:00')
+  })
+  it('shares entry guidance only with the owner after disclosure and while the booking is active', async () => {
+    const data = detail({
+      bookingName: '山田 太郎',
+      roomGuide: { location: '2階奥', photoUrl: null },
+    })
+    const w = world('2026-11-09T11:00:00Z', { bookingDetail: async () => data })
+    const get = makeGetMyBookingDetail(w.deps)
+    expect((await get(data.bookingCode, 5)).shareText).toContain('山田 太郎')
+    expect((await get(data.bookingCode, 5)).shareText).toContain('4821')
+    expect((await get(data.bookingCode, 5)).shareText).toContain('2階奥')
+    await expect(get(data.bookingCode, 6)).rejects.toMatchObject({ code: 'booking_not_found' })
+    const early = world('2026-11-09T10:59:59Z', { bookingDetail: async () => data })
+    expect((await makeGetMyBookingDetail(early.deps)(data.bookingCode, 5)).shareText).toBeNull()
+    const ended = world('2026-11-10T07:00:00Z', { bookingDetail: async () => data })
+    expect((await makeGetMyBookingDetail(ended.deps)(data.bookingCode, 5)).shareText).toBeNull()
+  })
   it('splits upcoming and past bookings with status badges', async () => {
     const { deps } = world('2026-11-05T00:00:00Z', {
       memberBookings: async () => [

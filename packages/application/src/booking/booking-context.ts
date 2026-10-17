@@ -22,7 +22,7 @@ import type {
 import type { StoreRepository } from '../ports/store-repository'
 
 /** Bookings must start at least this long from now (Q32 open; default 30 minutes). */
-export const BOOKING_LEAD_MINUTES = 30
+export const BOOKING_LEAD_MINUTES = 0
 
 export interface BookingDeps {
   readonly stores: StoreRepository
@@ -152,7 +152,11 @@ export async function lanePricing(deps: BookingDeps, lane: Lane, at: Date): Prom
 }
 
 export function bookingRules(priced: PricedProfile): BookingRules {
-  return { minimumMinutes: priced.minimumMinutes, leadMinutes: BOOKING_LEAD_MINUTES }
+  return {
+    minimumMinutes: priced.minimumMinutes,
+    leadMinutes: BOOKING_LEAD_MINUTES,
+    allowImmediate: true,
+  }
 }
 
 export function rangeMinutes(range: TimeRange, clipFrom: Date, clipTo: Date): number {

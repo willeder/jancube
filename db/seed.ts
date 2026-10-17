@@ -112,7 +112,7 @@ const DEV_STAFF_PASSWORD = 'jancube-dev-2026'
 
 const devStaff = [
   { email: 'owner@jancube.test', name: '開発 オーナー', role: 'owner', store: null },
-  { email: 'staff@jancube.test', name: '開発 店舗スタッフ', role: 'store_staff', store: 'JC001' },
+  { email: 'staff@jancube.test', name: '開発 店舗スタッフ', role: 'admin', store: 'JC001' },
   { email: 'cleaning@jancube.test', name: '開発 清掃担当', role: 'cleaning', store: 'JC001' },
 ] as const
 
@@ -139,6 +139,13 @@ const notificationTemplates: {
 }[] = [
   ...(['line', 'email'] as const).flatMap((channel, i) => [
     {
+      event: 'usage_completed',
+      channel,
+      priority: i + 1,
+      subject: '【雀CUBE】ご利用ありがとうございました',
+      body: '{{storeName}}をご利用いただきありがとうございました。\nお支払い金額：{{total}}\nご利用明細・領収書：{{myPageUrl}}',
+    },
+    {
       event: 'booking_confirmed',
       channel,
       priority: i + 1,
@@ -155,7 +162,10 @@ ${bookingSummary}
       channel,
       priority: i + 1,
       subject: '【雀CUBE】お部屋番号と入室コードのお知らせ',
-      body: `明日のご予約のご案内です。
+      body: `ご予約のお部屋・入室方法のご案内です。
+
+予約名：{{customerName}}
+{{previousRoomName}}
 
 ${bookingSummary}
 
@@ -163,6 +173,10 @@ ${bookingSummary}
 （{{codeValidFrom}}〜{{codeValidTo}} 有効）
 
 住所: {{storeAddress}}
+お部屋の場所：{{roomLocation}}
+扉の写真：{{roomPhotoUrl}}
+{{entryGuideText}}
+お部屋の扉には鍵はありません。
 ご予約の確認: {{myPageUrl}}`,
     },
     {
@@ -268,7 +282,7 @@ async function main() {
            (code, name, address, access_text, timezone, booking_open_date, booking_horizon_days,
             hold_minutes, proxy_hold_minutes, cleaning_buffer_minutes, key_before_minutes,
             key_after_minutes, status, is_active)
-         VALUES (?, ?, ?, ?, 'Asia/Tokyo', '2026-10-19', 60, 10, 30, 15, 15, 15, 'open', 1)
+         VALUES (?, ?, ?, ?, 'Asia/Tokyo', '2026-10-19', 60, 10, 30, 30, 15, 15, 'open', 1)
          ON DUPLICATE KEY UPDATE name = VALUES(name), address = VALUES(address),
            access_text = VALUES(access_text), status = 'open', is_active = 1`,
         [s.code, s.name, s.address, s.access_text],
@@ -358,7 +372,6 @@ async function main() {
     const roleNames = {
       owner: 'オーナー',
       admin: '本部管理者',
-      store_staff: '店舗スタッフ',
       cleaning: '清掃担当',
     }
     for (const code of PERMISSIONS) {

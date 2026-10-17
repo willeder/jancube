@@ -7,7 +7,7 @@ import { runtimeConfig } from './runtime-config'
  * HMAC-SHA-256 (SESSION_SECRET). Nothing secret is stored in it; the signature stops tampering.
  */
 const SESSION = 'jc_session'
-const SESSION_DAYS = 30
+const SESSION_DAYS = 365
 
 /** Sign-in in progress (C-05 → C-07): the challenge id, never the code. */
 const CHALLENGE = 'jc_auth'

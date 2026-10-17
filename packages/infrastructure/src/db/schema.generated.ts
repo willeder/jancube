@@ -1445,6 +1445,7 @@ export interface MemberNotes {
 }
 
 export interface Members {
+  notification_channel: Generated<string>;
   /**
    * 匿名化日時
    */
@@ -2608,6 +2609,7 @@ export interface RoomPhotos {
 }
 
 export interface Rooms {
+  location_text: string | null;
   /**
    * 現在の清掃状態
    */
@@ -3068,6 +3070,7 @@ export interface WebhookEvents {
 }
 
 export interface DB {
+  line_chat_sessions: { provider_id: string; line_user_id: string; payload_ciphertext: Buffer | null; updated_at: Date };
   access_keys: AccessKeys;
   alerts: Alerts;
   audit_logs: AuditLogs;

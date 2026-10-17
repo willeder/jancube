@@ -15,7 +15,7 @@ const owner: StaffActor = {
 }
 const storeStaff: StaffActor = {
   staffId: 2,
-  access: { staffId: 2, grants: [{ role: 'store_staff', storeId: 10 }] },
+  access: { staffId: 2, grants: [{ role: 'admin', storeId: 10 }] },
 }
 
 function world() {
@@ -121,7 +121,10 @@ describe('member detail (A-12)', () => {
     const { deps, member } = world()
     const change = makeChangeMemberStatus(deps)
     await expect(
-      change(storeStaff, { memberCode: member.memberCode, status: 'caution', reason: 'x' }),
+      change(
+        { staffId: 3, access: { staffId: 3, grants: [{ role: 'cleaning', storeId: 10 }] } },
+        { memberCode: member.memberCode, status: 'caution', reason: 'x' },
+      ),
     ).rejects.toMatchObject({ code: 'forbidden' })
     Object.assign(member, { status: 'withdrawn' })
     await expect(

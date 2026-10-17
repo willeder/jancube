@@ -32,13 +32,15 @@ describe('templates', () => {
 })
 
 describe('permissions (F-ADM-02)', () => {
-  const storeStaff = { staffId: 1, grants: [{ role: 'store_staff' as const, storeId: 1 }] }
+  const storeStaff = { staffId: 1, grants: [{ role: 'admin' as const, storeId: 1 }] }
   const owner = { staffId: 2, grants: [{ role: 'owner' as const, storeId: null }] }
   it('limits store staff to their store', () => {
     expect(can(storeStaff, 'bookings.view', 1)).toBe(true)
     expect(can(storeStaff, 'bookings.view', 2)).toBe(false)
-    expect(can(storeStaff, 'prices.manage')).toBe(false)
-    expect(() => assertCan(storeStaff, 'staff.manage')).toThrow()
+    expect(can(storeStaff, 'prices.manage', 1)).toBe(true)
+    expect(() =>
+      assertCan({ staffId: 3, grants: [{ role: 'cleaning', storeId: 1 }] }, 'staff.manage'),
+    ).toThrow()
     expect(visibleStoreIds(storeStaff, 'bookings.view')).toEqual([1])
   })
   it('gives owners everything everywhere', () => {

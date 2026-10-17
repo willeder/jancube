@@ -4,6 +4,7 @@ import type {
   ChallengeStatus,
   LegalDocumentRepository,
   LegalDocumentType,
+  LineMemberCreator,
   MemberRecord,
   MemberRepository,
   MemberStatus,
@@ -41,7 +42,7 @@ function toMember(row: {
   }
 }
 
-export class KyselyMemberRepository implements MemberRepository {
+export class KyselyMemberRepository implements MemberRepository, LineMemberCreator {
   constructor(private readonly db: Database) {}
 
   async findById(id: number) {
@@ -60,6 +61,80 @@ export class KyselyMemberRepository implements MemberRepository {
       .where('phone_e164', '=', phone)
       .executeTakeFirst()
     return row ? toMember(row) : null
+  }
+
+  /** The unique provider/user constraint serializes racing registrations without merging by email. */
+  async createLineMember(input: Parameters<LineMemberCreator['createLineMember']>[0]) {
+    const existing = async () => {
+      const row = await this.db
+        .selectFrom('member_line_links as l')
+        .innerJoin('members as m', 'm.id', 'l.member_id')
+        .select(memberColumns.map((c) => `m.${c}` as const))
+        .where('l.provider_id', '=', input.providerId)
+        .where('l.line_user_id', '=', input.lineUserId)
+        .executeTakeFirst()
+      return row ? toMember(row) : null
+    }
+    const member = await existing()
+    if (member) return member
+    try {
+      return await this.db.transaction().execute(async (trx) => {
+        const result = await trx
+          .insertInto('members')
+          .values({
+            member_code: crypto.randomUUID().replaceAll('-', ''),
+            identity_kind: 'line',
+            notification_channel: 'line',
+            family_name: input.profile.familyName,
+            given_name: input.profile.givenName,
+            email_normalized: input.profile.email,
+            registration_source: 'line',
+            status: 'active',
+          })
+          .executeTakeFirstOrThrow()
+        const id = Number(result.insertId)
+        if (id > 999999) throw new Error('member number capacity exceeded')
+        await trx
+          .updateTable('members')
+          .set({ member_code: `JC-U-${String(id).padStart(6, '0')}` })
+          .where('id', '=', id)
+          .execute()
+        await trx
+          .insertInto('member_line_links')
+          .values({
+            member_id: id,
+            provider_id: input.providerId,
+            line_user_id: input.lineUserId,
+            friend_status: input.friendStatus,
+            linked_at: input.at,
+            status_checked_at: input.friendStatus === 'unknown' ? null : input.at,
+          })
+          .execute()
+        await trx
+          .insertInto('member_consents')
+          .values(
+            input.consentDocumentIds.map((documentId) => ({
+              member_id: id,
+              legal_document_id: documentId,
+              agreed_at: input.at,
+              channel: 'liff',
+            })),
+          )
+          .execute()
+        return toMember(
+          await trx
+            .selectFrom('members')
+            .select(memberColumns)
+            .where('id', '=', id)
+            .executeTakeFirstOrThrow(),
+        )
+      })
+    } catch (error) {
+      if ((error as { code?: string }).code !== 'ER_DUP_ENTRY') throw error
+      const raced = await existing()
+      if (!raced) throw error
+      return raced
+    }
   }
 
   async createPhoneMember(input: Parameters<MemberRepository['createPhoneMember']>[0]) {

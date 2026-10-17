@@ -1,4 +1,5 @@
 import { DomainError } from '../shared/errors'
+import { normalizeRequiredEmail } from './account'
 
 export interface MemberProfileInput {
   readonly familyName: string
@@ -11,7 +12,7 @@ export interface MemberProfileInput {
 export interface MemberProfile {
   readonly familyName: string
   readonly givenName: string
-  /** Lower-cased; null when not provided (email is optional, CQ-38). */
+  /** Required and lower-cased for all new registrations; nullable only for legacy records. */
   readonly email: string | null
 }
 
@@ -30,7 +31,7 @@ export function validateMemberProfile(input: MemberProfileInput): MemberProfile 
   if (familyName.length > MAX_NAME || givenName.length > MAX_NAME) {
     throw new DomainError('name_too_long', 'name is too long')
   }
-  const email = input.email?.trim().toLowerCase() || null
+  const email = normalizeRequiredEmail(input.email)
   if (email && (email.length > 254 || !EMAIL_RE.test(email))) {
     throw new DomainError('invalid_email', 'enter a valid email address')
   }

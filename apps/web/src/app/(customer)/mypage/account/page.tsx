@@ -7,7 +7,7 @@ import { logoutAction } from '@/server/auth-actions'
 import { withContainer } from '@/server/container'
 import { isDomainError, toUserMessage } from '@/server/errors'
 import { requireMemberPage } from '@/server/member-page'
-import { EmailForm, WithdrawForm } from './AccountForms'
+import { EmailForm, NotificationChannelForm, WithdrawForm } from './AccountForms'
 import { UnlinkLineButton } from './UnlinkLineButton'
 
 export const dynamic = 'force-dynamic'
@@ -35,7 +35,7 @@ export default async function AccountPage({
     <>
       <PageHeader backHref="/mypage" title="会員情報" />
       <main className="mx-auto max-w-md space-y-4 px-4 py-4">
-        {saved && <Notice tone="success">メールアドレスを保存しました</Notice>}
+        {saved && <Notice tone="success">設定を保存しました</Notice>}
         <Card>
           <div className="grid grid-cols-2 gap-3">
             <ReadOnly label="姓（変更不可）" value={account.familyName ?? ''} />
@@ -64,17 +64,23 @@ export default async function AccountPage({
               <p className="mt-1">
                 連携済み（{localDate(account.line.linkedAt, 'Asia/Tokyo')}）
                 {account.line.friendStatus === 'blocked' && (
-                  <span className="ml-1 text-alert">ブロック中のため通知はメールで届きます</span>
+                  <span className="ml-1 text-alert">ブロック中のためLINE通知は届きません</span>
                 )}
               </p>
               <p className="mt-1 text-xs text-sub">
-                予約完了・部屋確定などのお知らせはLINEでお届けします
+                お知らせは下の設定で選択した方法でお届けします
               </p>
-              <UnlinkLineButton />
+              {account.phone ? (
+                <UnlinkLineButton />
+              ) : (
+                <p className="mt-2 text-xs text-sub">
+                  LINEでログインするアカウントのため、連携解除には別のログイン方法が必要です。スタッフにお問い合わせください。
+                </p>
+              )}
             </>
           ) : (
             <>
-              <p className="mt-1 text-sub">未連携です。連携すると予約のお知らせがLINEで届きます</p>
+              <p className="mt-1 text-sub">未連携です。連携後、下の設定でLINE通知を選択できます</p>
               <a
                 href={LINE_LINK_URL}
                 className="mt-2 block rounded-xl bg-[#06c755] py-2.5 text-center font-bold text-white"
@@ -83,6 +89,13 @@ export default async function AccountPage({
               </a>
             </>
           )}
+        </Card>
+
+        <Card>
+          <NotificationChannelForm
+            channel={account.notificationChannel ?? 'email'}
+            linked={!!account.line}
+          />
         </Card>
 
         <form action={logoutAction}>

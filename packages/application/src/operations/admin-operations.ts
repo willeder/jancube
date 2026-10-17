@@ -141,9 +141,13 @@ export function makeAdminOperations(deps: OperationsDeps, operations: Operations
     const store = await operations.requireStore(booking.storeId)
     const now = deps.clock.now()
     if (booking.end <= now) throw new DomainError('booking_not_assignable', 'booking has ended')
+    const final =
+      input.finalize ||
+      booking.assignment?.status === 'final' ||
+      isPreparationDue(booking.businessDate, store.timezone, now)
     if (
       booking.assignment?.roomId === input.roomId &&
-      (!input.finalize || booking.assignment.status === 'final')
+      (!final || booking.assignment.status === 'final')
     ) {
       throw new DomainError('room_unchanged', 'same room')
     }
@@ -161,7 +165,7 @@ export function makeAdminOperations(deps: OperationsDeps, operations: Operations
       await tx.assignRoom({
         bookingId: booking.id,
         roomId: input.roomId,
-        status: input.finalize ? 'final' : 'provisional',
+        status: final ? 'final' : 'provisional',
         source: 'manual',
         staffId: actor.staffId,
         reason,
@@ -196,7 +200,14 @@ export function makeAdminOperations(deps: OperationsDeps, operations: Operations
       await operations.syncCleaning(store, booking.businessDate)
       if (input.notifyCustomer) {
         const { live } = await keyOps.liveKey(booking.id)
-        if (live && isIssued(live)) await operations.notifyRoomAssigned(after, store, live)
+        if (live && isIssued(live))
+          await operations.notifyRoomAssigned(
+            after,
+            store,
+            live,
+            true,
+            booking.assignment?.roomName ?? '',
+          )
       }
     }
     return after

@@ -33,6 +33,9 @@ const messages: Record<string, string> = {
   name_required: '姓と名を入力してください',
   name_too_long: 'お名前が長すぎます',
   invalid_email: 'メールアドレスを正しく入力してください',
+  email_required: 'メールアドレスは必須です。マイページのアカウント設定から登録してください',
+  line_only_account:
+    'LINEのみで登録したアカウントは連携を解除できません。スタッフにお問い合わせください',
   terms_required: '利用規約・プライバシーポリシーへの同意が必要です',
   adult_required: '18歳以上の方のみご利用いただけます',
   coupon_not_found: 'このクーポンコードはご利用いただけません',

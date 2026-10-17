@@ -63,6 +63,8 @@ export interface LineWebhookEvent {
   readonly replyToken: string | null
   readonly timestamp: Date
   readonly isRedelivery: boolean
+  readonly text?: string | null
+  readonly postbackData?: string | null
 }
 
 export interface LineWebhookPayload {
@@ -82,5 +84,22 @@ export interface LineWebhookParser {
 
 /** Reply message (free; only valid for a short time after the event). */
 export interface LineReplySender {
-  reply(replyToken: string, text: string): Promise<void>
+  reply(replyToken: string, text: string, choices?: readonly LineReplyChoice[]): Promise<void>
+}
+
+/** Server-issued choices; postback values are opaque session tokens, never booking parameters. */
+export type LineReplyChoice =
+  | { readonly label: string; readonly data: string }
+  | { readonly label: string; readonly uri: string }
+
+/** Creates a phone-free member and its verified LINE identity in one transaction. */
+export interface LineMemberCreator {
+  createLineMember(input: {
+    readonly providerId: string
+    readonly lineUserId: string
+    readonly friendStatus: LineFriendStatus
+    readonly profile: import('@jancube/domain').MemberProfile
+    readonly consentDocumentIds: readonly number[]
+    readonly at: Date
+  }): Promise<import('./member-repository').MemberRecord>
 }

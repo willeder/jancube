@@ -53,7 +53,13 @@ export function makeNotify(deps: NotifyDeps) {
       sms: smsTo,
     }
     const channel = chooseChannel(
-      templates.map((t) => t.channel),
+      templates
+        .map((t) => t.channel)
+        .filter((c) => {
+          if (request.event === 'payment_link' && request.smsTo) return c === 'sms'
+          if (c === 'sms') return false
+          return !contact?.notificationChannel || c === contact.notificationChannel
+        }),
       { line: !!destinations.line, email: !!destinations.email, sms: !!destinations.sms },
     )
     const template = templates.find((t) => t.channel === channel)

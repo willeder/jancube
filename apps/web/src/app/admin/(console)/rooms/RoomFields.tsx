@@ -37,6 +37,15 @@ export function RoomFields({ d }: { d: Partial<RoomDraft> & { photos?: readonly 
         </Field>
       </div>
       <div className="flex flex-wrap gap-4 text-sm">
+        <Field label="フロア・お部屋の位置（通知と予約詳細に表示）">
+          <input
+            name="locationText"
+            maxLength={500}
+            defaultValue={d.locationText ?? ''}
+            className={inputClass}
+            placeholder="2階・エレベーターを出て右手の2番目"
+          />
+        </Field>
         <label className="inline-flex items-center gap-1">
           <input type="checkbox" name="isNamedBooking" defaultChecked={d.isNamedBooking} />
           指名予約の対象

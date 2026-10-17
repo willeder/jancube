@@ -7,12 +7,19 @@ import { BOOKING_TEMPLATE_VARIABLES } from './booking-notifications'
  */
 export const TEMPLATE_VARIABLES: Readonly<Record<NotificationEvent, readonly string[]>> = {
   booking_confirmed: BOOKING_TEMPLATE_VARIABLES,
-  room_assigned: [...BOOKING_TEMPLATE_VARIABLES, 'entryCode', 'codeValidFrom', 'codeValidTo'],
+  room_assigned: [
+    ...BOOKING_TEMPLATE_VARIABLES,
+    'entryCode',
+    'codeValidFrom',
+    'codeValidTo',
+    'previousRoomName',
+  ],
   booking_changed: BOOKING_TEMPLATE_VARIABLES,
   booking_canceled: [...BOOKING_TEMPLATE_VARIABLES, 'cancellationFee', 'refundAmount'],
   // Assumption: the refund notice also states the amount refunded.
   refund_completed: [...BOOKING_TEMPLATE_VARIABLES, 'refundAmount'],
   usage_reminder: BOOKING_TEMPLATE_VARIABLES,
+  usage_completed: BOOKING_TEMPLATE_VARIABLES,
   coupon_granted: ['couponName', 'couponExpiresAt'],
   payment_link: ['storeName', 'date', 'startTime', 'linkExpiresAt', 'paymentUrl'],
 }
@@ -27,6 +34,11 @@ export const TEMPLATE_VARIABLE_LABELS: Readonly<Record<string, string>> = {
   endTime: '終了時刻',
   roomType: '部屋タイプ',
   roomName: '部屋名',
+  customerName: '予約名',
+  roomLocation: '部屋の場所',
+  roomPhotoUrl: '部屋の扉写真URL',
+  entryGuideText: '店舗入室案内',
+  previousRoomName: '変更前の部屋',
   guestCount: '人数',
   total: 'お支払い金額',
   myPageUrl: 'マイページURL',
@@ -51,6 +63,11 @@ export const TEMPLATE_SAMPLE_VALUES: Readonly<Record<string, string>> = {
   endTime: '16:00',
   roomType: '4麻',
   roomName: 'Room6',
+  customerName: '山田 太郎',
+  roomLocation: '2階奥の右側',
+  roomPhotoUrl: 'https://example.com/room-door.jpg',
+  entryGuideText: '入口のキーパッドにコードを入力してください。',
+  previousRoomName: 'Room5',
   guestCount: '4名',
   total: '6,100円',
   myPageUrl: 'https://example.com/mypage/bookings/JC-2026-1027',
@@ -74,4 +91,5 @@ export const NOTIFICATION_EVENT_LABELS: Readonly<Record<NotificationEvent, strin
   coupon_granted: 'クーポン付与',
   payment_link: '決済リンク（代理予約）',
   usage_reminder: '利用前リマインド',
+  usage_completed: '利用後のお礼・お支払い完了',
 }

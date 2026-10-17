@@ -37,6 +37,8 @@ export interface BookingStoreInfo {
 
 /** C-13 予約詳細 (read model; secrets stay encrypted until the use case decides to show them). */
 export interface MemberBookingDetail {
+  readonly bookingName?: string
+  readonly roomGuide?: { photoUrl: string | null; location: string | null }
   readonly id: number
   readonly bookingCode: string
   readonly status: BookingStatus
@@ -127,6 +129,7 @@ export interface MemberCouponGrant {
 
 /** C-17 会員情報. */
 export interface MemberAccount {
+  readonly notificationChannel?: 'email' | 'line'
   readonly id: number
   readonly memberCode: string
   readonly phone: string | null
@@ -146,6 +149,7 @@ export interface MyPageRepository {
   couponGrants(memberId: number): Promise<MemberCouponGrant[]>
   account(memberId: number): Promise<MemberAccount | null>
   updateEmail(memberId: number, email: string | null): Promise<void>
+  updateNotificationChannel(memberId: number, channel: 'email' | 'line'): Promise<void>
   /** Confirmed bookings that have not ended yet. */
   upcomingBookingCount(memberId: number, now: Date): Promise<number>
   /**

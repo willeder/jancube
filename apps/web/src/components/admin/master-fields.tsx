@@ -402,17 +402,14 @@ export function StoreFields({ d }: { d: Partial<StoreDraft> }) {
             name="cleaningBufferMinutes"
             inputMode="numeric"
             required
-            defaultValue={d.cleaningBufferMinutes ?? 15}
+            defaultValue={d.cleaningBufferMinutes ?? 30}
             className={inputClass}
           />
         </Field>
-        <Field label="部屋最終確定の目安(開始前・分)">
-          <input
-            name="roomFinalizeMinutes"
-            inputMode="numeric"
-            defaultValue={d.roomFinalizeMinutes ?? ''}
-            className={inputClass}
-          />
+        <Field label="部屋最終確定">
+          <p className="py-3 text-sm">
+            ご利用日の前日20:00（店舗の現地時間）。それ以降のご予約は決済後に確定します。
+          </p>
         </Field>
         <Field label="鍵有効: 開始前(分)">
           <input

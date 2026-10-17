@@ -43,7 +43,13 @@ const offer = (grantId: number, terms: Partial<CouponTerms>): CouponOffer => ({
 })
 
 function world(
-  options: { now?: string; offers?: CouponOffer[]; others?: OccupyingBooking[] } = {},
+  options: {
+    now?: string
+    offers?: CouponOffer[]
+    others?: OccupyingBooking[]
+    email?: string | null
+    suspended?: boolean
+  } = {},
 ) {
   const base = fakeBookingDeps({ now: options.now ?? '2026-11-01T12:00:00+09:00' })
   const state = {
@@ -184,8 +190,8 @@ function world(
         phone: '+819012345678',
         familyName: '山田',
         givenName: '太郎',
-        email: null,
-        status: 'active',
+        email: options.email === undefined ? 'taro@example.com' : options.email,
+        status: options.suspended ? 'suspended' : 'active',
       }),
       findByPhone: async () => null,
       createPhoneMember: async () => {
@@ -248,6 +254,19 @@ describe('getPaymentOptions (C-09)', () => {
 })
 
 describe('startCheckout (C-09 → C-10)', () => {
+  it('rejects suspended accounts and missing required email before preparing payment', async () => {
+    for (const [options, code] of [
+      [{ suspended: true }, 'member_cannot_book'],
+      [{ email: null }, 'email_required'],
+    ] as const) {
+      const w = world(options)
+      await expect(
+        makeStartCheckout(w.deps)({ ...startInput, grantId: null }),
+      ).rejects.toMatchObject({ code })
+      expect(w.log.prepared).toHaveLength(0)
+      expect(w.log.checkouts).toHaveLength(0)
+    }
+  })
   it('reserves the coupon, records the policy and opens checkout for the discounted total', async () => {
     const { deps, log } = world({ offers: [offer(1, {})] })
     const result = await makeStartCheckout(deps)({ ...startInput, grantId: 1 })
