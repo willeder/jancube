@@ -1,6 +1,6 @@
 import {
   addDays,
-  addMinutes,
+  earliestBookableStart,
   type LocalDate,
   type OccupancyLevel,
   type OpeningWindow,
@@ -56,7 +56,11 @@ export function makeGetBookingCalendar(deps: BookingDeps) {
         ? await deps.inventory.load(store.id, firstOpen.opensAt, lastOpen.closesAt, now)
         : { groups: [], rooms: [], bookings: [], blocks: [] }
 
-    const earliestStart = addMinutes(now, BOOKING_LEAD_MINUTES)
+    const earliestStart = earliestBookableStart(now, {
+      minimumMinutes: 30,
+      leadMinutes: BOOKING_LEAD_MINUTES,
+      allowImmediate: true,
+    })
     const days = [...windows.entries()].map(([date, window]) => {
       if (date < first) return { date, status: 'not_bookable' as const }
       if (!window) return { date, status: 'closed' as const }

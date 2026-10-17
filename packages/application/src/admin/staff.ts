@@ -22,12 +22,21 @@ export interface StaffAdminDeps {
 export const ROLE_LABELS: Readonly<Record<RoleCode, string>> = {
   owner: 'オーナー',
   admin: '本部管理者',
-  store_staff: '店舗スタッフ',
   cleaning: '清掃担当',
 }
 
 const grantsForAudit = (grants: readonly RoleGrant[]) =>
   grants.map((g) => ({ role: g.role, storeId: g.storeId }))
+
+/** Administrators can manage cleaning accounts; owner/admin account authority stays with owners. */
+function assertAccountAuthority(actor: StaffActor, grants: readonly RoleGrant[]) {
+  if (
+    !isOwner(actor.access.grants) &&
+    grants.some((g) => g.role === 'owner' || g.role === 'admin')
+  ) {
+    throw new DomainError('forbidden', 'only owners can manage administrator accounts')
+  }
+}
 
 async function loadStaff(deps: StaffAdminDeps, staffId: number): Promise<StaffAdminRow> {
   const staff = await deps.staffAdmin.find(staffId)
@@ -69,6 +78,7 @@ export function makeInviteStaff(deps: StaffAdminDeps) {
     const email = normalizeStaffEmail(input.email)
     const name = requireText(input.name, 'name_required', 100)
     assertRoleGrants(input.grants)
+    assertAccountAuthority(actor, input.grants)
     if (await deps.staffAdmin.emailTaken(email)) {
       throw new DomainError('staff_email_taken', 'this email is already registered')
     }
@@ -99,8 +109,10 @@ export function makeUpdateStaff(deps: StaffAdminDeps) {
   ): Promise<void> {
     assertAllStores(actor, 'staff.manage')
     const before = await loadStaff(deps, staffId)
+    assertAccountAuthority(actor, before.grants)
     const name = requireText(input.name, 'name_required', 100)
     assertRoleGrants(input.grants)
+    assertAccountAuthority(actor, input.grants)
     if (before.status === 'active' && isOwner(before.grants) && !isOwner(input.grants)) {
       await assertOtherActiveOwner(deps, staffId)
     }
@@ -129,6 +141,7 @@ export function makeSetStaffEnabled(deps: StaffAdminDeps) {
   ): Promise<void> {
     assertAllStores(actor, 'staff.manage')
     const before = await loadStaff(deps, staffId)
+    assertAccountAuthority(actor, before.grants)
     if (!enabled) {
       if (staffId === actor.staffId) {
         throw new DomainError('cannot_disable_self', 'you cannot disable your own account')
@@ -161,7 +174,8 @@ export function makeResendStaffInvite(deps: StaffAdminDeps) {
     inviteUrl: (token: string) => string,
   ): Promise<void> {
     assertAllStores(actor, 'staff.manage')
-    await loadStaff(deps, staffId)
+    const target = await loadStaff(deps, staffId)
+    assertAccountAuthority(actor, target.grants)
     await deps.sendInvite(staffId, inviteUrl)
     await deps.audit.record({
       actor: auditActor(actor),

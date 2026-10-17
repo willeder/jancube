@@ -88,6 +88,14 @@ function setup(members: MemberRecord[] = [member(1)]) {
 }
 
 describe('LINE sign-in and linking (F-LINE-02/03, F-AUTH-06)', () => {
+  it('keeps the sole login link of a phone-free account', async () => {
+    const { deps, links } = setup([{ ...member(1), phone: null }])
+    await makeLinkLineAccount(deps)(1, { lineUserId: 'U1', friendStatus: 'friend' })
+    await expect(makeUnlinkLineAccount(deps)(1)).rejects.toMatchObject({
+      code: 'line_only_account',
+    })
+    expect(links.rows).toHaveLength(1)
+  })
   it('sends an unknown LINE user to linking, then signs the linked member in directly', async () => {
     const { deps, links, audits } = setup()
     const signIn = makeLineSignIn(deps)

@@ -20,7 +20,9 @@ const template = (channel: PublishedTemplate['channel'], priority: number): Publ
   body: '{{storeName}} {{bookingCode}}',
 })
 
-function world(contact: { email?: string; line?: string; phone?: string } = {}) {
+function world(
+  contact: { email?: string; line?: string; phone?: string; preference?: 'email' | 'line' } = {},
+) {
   let now = new Date('2026-11-01T00:00:00Z')
   const queued: (Parameters<NotificationRepository['enqueue']>[0] & {
     id: number
@@ -36,6 +38,7 @@ function world(contact: { email?: string; line?: string; phone?: string } = {}) 
       email: contact.email ?? null,
       phone: contact.phone ?? null,
       lineUserId: contact.line ?? null,
+      notificationChannel: contact.preference,
     }),
     enqueue: async (d) => {
       if (queued.some((q) => q.deduplicationKey === d.deduplicationKey)) return
@@ -91,6 +94,28 @@ const request = {
 }
 
 describe('notify (F-NTF-07)', () => {
+  it('honors the selected channel and never falls back from unavailable LINE or to SMS', async () => {
+    const email = world({ line: 'U1', email: 'a@example.com', preference: 'email' })
+    expect(await makeNotify({ ...email, secrets: box })(request)).toMatchObject({
+      channel: 'email',
+    })
+    const blocked = world({ email: 'a@example.com', phone: '+819012345678', preference: 'line' })
+    expect(await makeNotify({ ...blocked, secrets: box })(request)).toEqual({
+      status: 'screen_only',
+    })
+    expect(blocked.queued).toHaveLength(0)
+    blocked.notifications.templates = async () => [template('sms', 1)]
+    expect(await makeNotify({ ...blocked, secrets: box })(request)).toEqual({
+      status: 'screen_only',
+    })
+    expect(
+      await makeNotify({ ...blocked, secrets: box })({
+        ...request,
+        event: 'payment_link',
+        smsTo: '+819012345678',
+      }),
+    ).toMatchObject({ channel: 'sms' })
+  })
   it('uses LINE when linked, email otherwise, and nothing when neither', async () => {
     const line = world({ line: 'U1', email: 'a@example.com' })
     expect(await makeNotify({ ...line, secrets: box })(request)).toEqual({

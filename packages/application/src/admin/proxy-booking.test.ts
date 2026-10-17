@@ -13,8 +13,8 @@ import {
 } from './proxy-booking'
 
 const D = '2026-11-10'
-const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'store_staff', storeId: 1 }] }
-const otherStoreStaff: StaffAccess = { staffId: 8, grants: [{ role: 'store_staff', storeId: 2 }] }
+const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'admin', storeId: 1 }] }
+const otherStoreStaff: StaffAccess = { staffId: 8, grants: [{ role: 'admin', storeId: 2 }] }
 const cleaning: StaffAccess = { staffId: 9, grants: [{ role: 'cleaning', storeId: 1 }] }
 
 const member: MemberRecord = {

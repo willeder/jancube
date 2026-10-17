@@ -366,6 +366,7 @@ export class KyselyRoomAdminRepository implements RoomAdminRepository {
         'r.code',
         'r.name',
         'r.description',
+        'r.location_text',
         'r.operating_status',
         'r.cleaning_status',
         'r.is_named_booking',
@@ -471,6 +472,7 @@ export class KyselyRoomAdminRepository implements RoomAdminRepository {
 const roomValues = (d: RoomDraft) => ({
   name: d.name,
   description: d.description,
+  location_text: d.locationText ?? null,
   operating_status: d.operatingStatus,
   is_named_booking: d.isNamedBooking ? 1 : 0,
   is_vip_candidate: d.isVipCandidate ? 1 : 0,
@@ -512,6 +514,7 @@ function toRoom(r: {
   code: string
   name: string
   description: string | null
+  location_text: string | null
   operating_status: string
   cleaning_status: string
   is_named_booking: number
@@ -529,6 +532,7 @@ function toRoom(r: {
     code: r.code,
     name: r.name,
     description: r.description,
+    locationText: r.location_text,
     operatingStatus: r.operating_status as RoomStatus,
     cleaningStatus: r.cleaning_status,
     isNamedBooking: r.is_named_booking === 1,

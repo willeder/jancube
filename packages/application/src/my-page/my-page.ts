@@ -3,7 +3,7 @@ import {
   DomainError,
   isDateChangeAllowed,
   isEntryInfoDisclosed,
-  normalizeOptionalEmail,
+  normalizeRequiredEmail,
   receiptAvailability,
 } from '@jancube/domain'
 import { type CancelDeps, makeQuoteCancellation } from '../booking/cancel-booking'
@@ -126,11 +126,37 @@ export function makeGetMyBookingDetail(deps: MyPageDeps) {
       .filter((r) => r.status !== 'failed')
       .reduce((sum, r) => sum + r.amount, 0)
     const upcoming = active && detail.end > now
+    // Calendar dates must follow each instant, including bookings after midnight on a business day.
+    const shareDateTime = (instant: Date) =>
+      new Intl.DateTimeFormat('ja-JP', {
+        timeZone: detail.store.timezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+      }).format(instant)
     return {
       booking: detail,
       room,
       entry,
       entryDisclosed: disclosed,
+      shareText:
+        upcoming && entry && room
+          ? [
+              `予約名：${detail.bookingName ?? ''}`,
+              `${detail.store.name}\n${detail.store.address}`,
+              `お部屋：${room.name}（${detail.roomGroupName}）`,
+              `ご利用日時：${shareDateTime(detail.start)}〜${shareDateTime(detail.end)}`,
+              `店舗入口の入室コード：${entry.code}`,
+              'お部屋の扉には鍵はありません。',
+              detail.roomGuide?.location ?? '',
+              detail.store.entryGuideText ?? '',
+            ]
+              .filter(Boolean)
+              .join('\n')
+          : null,
       paid,
       refunded,
       upcoming,
@@ -216,7 +242,7 @@ export function makeUpdateMyEmail(deps: Pick<MyPageDeps, 'myPage' | 'audit'>) {
   const getMyAccount = makeGetMyAccount(deps)
   return async function updateMyEmail(memberId: number, input: string): Promise<void> {
     const account = await getMyAccount(memberId)
-    const email = normalizeOptionalEmail(input)
+    const email = normalizeRequiredEmail(input)
     if (email === account.email) return
     await deps.myPage.updateEmail(memberId, email)
     await deps.audit.record({
@@ -228,6 +254,27 @@ export function makeUpdateMyEmail(deps: Pick<MyPageDeps, 'myPage' | 'audit'>) {
       // Personal data is not copied into the audit log; only whether it was set.
       before: { email: account.email ? 'set' : 'none' },
       after: { email: email ? 'set' : 'none' },
+    })
+  }
+}
+
+/** Customer choice; blocked LINE never silently switches to email. */
+export function makeUpdateMyNotificationChannel(deps: Pick<MyPageDeps, 'myPage' | 'audit'>) {
+  return async (memberId: number, channel: string): Promise<void> => {
+    const account = await makeGetMyAccount(deps)(memberId)
+    if (channel !== 'email' && channel !== 'line')
+      throw new DomainError('invalid_channel', 'choose email or LINE')
+    if (channel === 'line' && !account.line)
+      throw new DomainError('line_not_linked', 'link LINE first')
+    if (channel === 'email') normalizeRequiredEmail(account.email)
+    await deps.myPage.updateNotificationChannel(memberId, channel)
+    await deps.audit.record({
+      actor: { type: 'member', memberId },
+      action: 'member.notification_channel',
+      targetType: 'member',
+      targetId: memberId,
+      before: { channel: account.notificationChannel ?? 'email' },
+      after: { channel },
     })
   }
 }

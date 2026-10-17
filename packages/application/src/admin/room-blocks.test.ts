@@ -10,8 +10,8 @@ import {
 } from './room-blocks'
 
 const D = '2026-11-10'
-const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'store_staff', storeId: 1 }] }
-const otherStore: StaffAccess = { staffId: 8, grants: [{ role: 'store_staff', storeId: 2 }] }
+const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'admin', storeId: 1 }] }
+const otherStore: StaffAccess = { staffId: 8, grants: [{ role: 'admin', storeId: 2 }] }
 
 const booking = (
   code: string,

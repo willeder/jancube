@@ -108,22 +108,34 @@ export class KyselyBookingChangeRepository implements BookingChangeRepository {
         .execute()
     }
     return withDeadlockRetry(() =>
-      this.db.transaction().execute(async (trx) => {
-        for (const key of keys) {
-          await trx
-            .selectFrom('inventory_day_locks')
-            .select('id')
-            .where('room_group_id', '=', key.roomGroupId)
-            .where('business_date', '=', dateValue(key.businessDate))
-            .forUpdate()
-            .execute()
-        }
-        const inventory = new KyselyInventoryRepository(trx)
-        return fn({
-          loadInventory: (storeId, from, to, now) => inventory.load(storeId, from, to, now),
-          applyChange: (input) => applyChange(trx, input),
-        })
-      }),
+      this.db
+        .transaction()
+        .setIsolationLevel('read committed')
+        .execute(async (trx) => {
+          // Use the same group-wide locks as holds/confirmation, in a stable order across changes.
+          for (const groupId of [...new Set(keys.map((key) => key.roomGroupId))]) {
+            await trx
+              .selectFrom('room_groups')
+              .select('id')
+              .where('id', '=', groupId)
+              .forUpdate()
+              .executeTakeFirstOrThrow()
+          }
+          for (const key of keys) {
+            await trx
+              .selectFrom('inventory_day_locks')
+              .select('id')
+              .where('room_group_id', '=', key.roomGroupId)
+              .where('business_date', '=', dateValue(key.businessDate))
+              .forUpdate()
+              .execute()
+          }
+          const inventory = new KyselyInventoryRepository(trx)
+          return fn({
+            loadInventory: (storeId, from, to, now) => inventory.load(storeId, from, to, now),
+            applyChange: (input) => applyChange(trx, input),
+          })
+        }),
     )
   }
 }

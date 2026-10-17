@@ -7,10 +7,7 @@ import type {
   LineWebhookParser,
 } from '../ports/line'
 
-/**
- * Fixed reply to messages sent to the official account. Booking by chat (natural language or the
- * L-05 selection flow) is not part of this release; staff can still answer in the chat (tracker #15).
- */
+/** Compatibility guidance when the selection-chat handler is not supplied. */
 export const LINE_GUIDANCE_MESSAGE = [
   'メッセージありがとうございます。',
   'ご予約・ご予約の確認は、画面下のメニュー「予約する」「予約確認」からお手続きください。',
@@ -26,6 +23,9 @@ export interface LineWebhookDeps {
   /** Same key as member_line_links.provider_id (see LineAccountDeps.providerId). */
   readonly providerId: string
   readonly environment: 'test' | 'live'
+  readonly chat?: (
+    event: LineWebhookEvent,
+  ) => Promise<{ text: string; choices: readonly import('../ports/line').LineReplyChoice[] } | null>
 }
 
 /**
@@ -93,6 +93,17 @@ async function handleEvent(
       return linked ? 'processed' : 'ignored'
     }
     case 'message': {
+      if (deps.chat) {
+        const message = await deps.chat(event)
+        if (message && event.replyToken) {
+          try {
+            await deps.replies.reply(event.replyToken, message.text, message.choices)
+          } catch (error) {
+            throw new ReplyFailed(error instanceof Error ? error.message : String(error))
+          }
+        }
+        return 'processed'
+      }
       // Redelivered events carry reply tokens that may already be used or expired.
       if (!event.replyToken || event.isRedelivery) return 'ignored'
       try {

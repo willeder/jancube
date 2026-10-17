@@ -1,10 +1,10 @@
 import { DomainError } from '../shared/errors'
 
 /**
- * Operator roles (tracker 2026-10-07: owner / admin / store staff / cleaning staff; CQ-44 open).
+ * Operator roles (confirmed tracker 2026-10-15: owner / admin / cleaning).
  * Kept as data in `roles` / `role_permissions`; these constants are the seed and the code contract.
  */
-export const ROLES = ['owner', 'admin', 'store_staff', 'cleaning'] as const
+export const ROLES = ['owner', 'admin', 'cleaning'] as const
 export type RoleCode = (typeof ROLES)[number]
 
 export const PERMISSIONS = [
@@ -32,19 +32,7 @@ export type Permission = (typeof PERMISSIONS)[number]
 const ALL = PERMISSIONS
 export const ROLE_PERMISSIONS: Readonly<Record<RoleCode, readonly Permission[]>> = {
   owner: ALL,
-  admin: ALL.filter((p) => p !== 'staff.manage'),
-  store_staff: [
-    'dashboard.view',
-    'bookings.view',
-    'bookings.manage',
-    'bookings.cancel',
-    'keys.manage',
-    'cleaning.view',
-    'cleaning.work',
-    'members.view',
-    'alerts.manage',
-    'payments.view',
-  ],
+  admin: ALL,
   cleaning: ['cleaning.view', 'cleaning.work'],
 }
 

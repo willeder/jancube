@@ -48,8 +48,10 @@ describe('validateMemberProfile', () => {
     })
   })
 
-  it('treats a blank email as not provided', () => {
-    expect(validateMemberProfile({ ...ok, email: '  ' }).email).toBeNull()
+  it('requires email under the confirmed notification policy', () => {
+    expect(() => validateMemberProfile({ ...ok, email: '  ' })).toThrow(
+      expect.objectContaining({ code: 'email_required' }),
+    )
   })
 
   it.each([

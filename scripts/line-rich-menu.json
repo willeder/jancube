@@ -6,7 +6,7 @@
   "areas": [
     {
       "bounds": { "x": 0, "y": 0, "width": 833, "height": 843 },
-      "action": { "type": "uri", "label": "予約する", "uri": "{{LIFF_URL}}" }
+      "action": { "type": "message", "label": "予約する", "text": "予約する" }
     },
     {
       "bounds": { "x": 833, "y": 0, "width": 834, "height": 843 },

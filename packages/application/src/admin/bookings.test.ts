@@ -12,7 +12,7 @@ import { buildTimelineRows, makeResendNotification, makeSearchBookings, packRows
 
 const D = '2026-11-10'
 const owner: StaffAccess = { staffId: 1, grants: [{ role: 'owner', storeId: null }] }
-const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'store_staff', storeId: 1 }] }
+const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'admin', storeId: 1 }] }
 const cleaning: StaffAccess = { staffId: 9, grants: [{ role: 'cleaning', storeId: 1 }] }
 
 describe('storeFilter (F-ADM-02 / F-ADM-04)', () => {

@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { safeNext } from '@/server/line-session'
-import { LinkSteps } from '../LinkSteps'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,11 +15,11 @@ export default async function LiffLinkDonePage({
       <div>
         <h1 className="text-lg font-bold">LINE連携が完了しました</h1>
         <p className="mt-1 text-sm text-sub">
-          次回からはLINEのメニューを開くだけで、認証なしでご予約いただけます。
-          ご予約のお知らせもLINEでお届けします
+          次回からはLINEでログインしてご利用いただけます。
+          お知らせの受取方法はマイページのアカウント設定で確認・変更できます
         </p>
       </div>
-      <LinkSteps current={5} />
+      <p className="rounded-xl bg-white p-4 text-sm">LINEアカウントとの連携が完了しました。</p>
       <Link href={next} className="block rounded-xl bg-brand py-3 text-center font-bold text-white">
         {next === '/' ? '予約を始める' : '続ける'}
       </Link>

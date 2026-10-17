@@ -1,0 +1,53 @@
+Jancube beta acceptance checklist — 17 October 2026
+
+Authority: latest agreed Yano/client decisions, including tracker updates of 13/15 October.
+Target: 31 October beta; production launch is a separate milestone.
+
+Implementation and local checks — complete (live-provider acceptance remains below)
+[x] Phone-free LINE registration and My Page.
+[x] Choice-based LINE booking and persistent staff handoff.
+[x] Rooms final at previous-day 20:00 JST, including same-day catch-up.
+[x] Required email and selected email/LINE notification preference.
+[x] Owner/admin/cleaning permission model; owner manages administrator accounts.
+[x] One-year customer login persistence.
+[x] Booking copy/share and room photo/location guidance.
+[x] End+15-minute combined thank-you/payment-completion notification (no post-use charging).
+[x] Production dependencies fail explicitly when configuration is missing.
+[x] Automated regression checks, build and dependency boundaries.
+
+External accounts/access — do not mark complete from adapter code
+[BLOCKED] Client Cloudflare/TiDB staging resources and deployment credentials.
+[BLOCKED] LINE Login/LIFF/Messaging channels, linked provider and real message delivery.
+[BLOCKED] SMSLINK specification/authentication and actual OTP/payment-link delivery.
+[BLOCKED] Stripe account/payment method access and real test-mode webhook/refund checks.
+[BLOCKED] Email sender/domain access and deliverability checks.
+[BLOCKED] Entrance-lock API/device access, overlapping-code capacity and physical-device testing.
+
+Concrete pending decisions — preserve existing behavior until reviewed
+[DECISION] Customer Google versus LINE/phone authentication relationship; admin Google setup.
+[DECISION] Staff 2FA method (not selected by the tracker).
+[DECISION] Coupon combination eligibility/order and restoration after fee-bearing cancellation.
+[DECISION] Web/proxy hold expiry and late successful payment business policy.
+[DECISION] Receipt fields/rounding and refund wording; no invented invoice registration number.
+[DECISION] Cleaning-photo placement/adoption (Inoue) and retention periods (Actpro #32).
+[DECISION] Remaining same-day/uncleaned-room operating details, CSV/alert/dashboard definitions.
+
+Client material and acceptance
+[INPUT] Room-door photos, actual door labels, floor guidance and store entry instructions.
+[INPUT] Staff emails/assignments, approved legal text, live store/pricing/coupon master data.
+[UAT] Concurrent last-room bookings, duplicate/late/failed webhooks and refund recovery.
+[UAT] Same-day booking, room changes/cancellation, code creation/revocation and message receipt.
+[UAT] Cleaning task/author logging, role isolation and customer phone-browser journeys.
+[UAT] Yano/client beta acceptance, operating instructions and limitations handover.
+
+Excluded initially: extension, checkout, WordPress embedding/plugin/code generator and equipment automation.
+Verification: pnpm check passed (lint, types, dependency boundaries and 304 tests / 44 files).
+MySQL 8.4.11 and TiDB 8.5.7: migrations/seed/constraints and real-adapter acceptance passed.
+12 simultaneous bookings for 5 rooms: 5 successes / 7 clean rejections; last-room test: 1 / 11.
+Eight concurrent LINE registrations produce one account. Duplicate payment confirmation is safe.
+Browser QA: 390px mobile and 1280px desktop; registration, notification save and clipboard share
+passed with no page errors or horizontal overflow. Real LINE/SMS/payment/device access is untested.
+Application build passed. Cloudflare OpenNext bundle and jobs dry run passed in Linux;
+native Windows packaging requires symlink privileges, so use scripts/check-build-linux.sh or CI.
+CI database matrix added locally; not pushed or run on GitHub.
+Details and release sequence: docs/beta-handover.txt. No deployment or client messages were sent.

@@ -8,6 +8,7 @@ import {
 } from './booking-context'
 
 export interface AvailabilityLane {
+  readonly capacity: number
   readonly key: string
   readonly kind: 'group' | 'room'
   readonly label: string
@@ -51,6 +52,7 @@ export function makeGetDayAvailability(deps: BookingDeps) {
           bookingRules(priced),
         )
         return {
+          capacity: lane.group.capacity,
           key: lane.key,
           kind: lane.kind,
           label: lane.room ? lane.room.name : lane.group.name,

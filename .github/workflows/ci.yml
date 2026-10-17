@@ -22,3 +22,59 @@ jobs:
       - run: pnpm test
       - name: Build web (OpenNext for Cloudflare Workers)
         run: pnpm --filter @jancube/web cf:build
+
+  database-acceptance:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: mysql
+            image: mysql:8.4
+            port: 3306
+            url: mysql://root:jancube@127.0.0.1:3306/jancube_beta_verify
+          - target: tidb
+            image: pingcap/tidb:v8.5.7
+            port: 4000
+            url: mysql://root@127.0.0.1:4000/jancube_beta_verify
+    services:
+      database:
+        image: ${{ matrix.image }}
+        env:
+          MYSQL_ROOT_PASSWORD: jancube
+        ports:
+          - ${{ matrix.port }}:${{ matrix.port }}
+    env:
+      DATABASE_URL: ${{ matrix.url }}
+      TIDB_URL: ${{ matrix.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Wait for isolated database and enable TiDB constraints
+        run: |
+          node --input-type=module <<'JS'
+          import { createConnection } from 'mysql2/promise'
+          const server = new URL(process.env.DATABASE_URL)
+          server.pathname = '/'
+          for (let attempt = 0; ; attempt++) {
+            try {
+              const db = await createConnection(server.href)
+              const [[version]] = await db.query('SELECT VERSION() AS v')
+              if (version.v.includes('TiDB')) await db.query('SET GLOBAL tidb_enable_check_constraint = ON')
+              await db.end()
+              break
+            } catch (error) {
+              if (attempt >= 30) throw error
+              await new Promise(resolve => setTimeout(resolve, 1000))
+            }
+          }
+          JS
+      - run: pnpm db:migrate --target ${{ matrix.target }}
+      - run: pnpm db:seed
+      - run: pnpm exec tsx db/verify-compat.ts ${{ matrix.target }}
+      - run: pnpm db:check:concurrency
+      - run: pnpm exec tsx db/check-beta.ts

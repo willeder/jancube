@@ -36,8 +36,8 @@ describe('admin master rules', () => {
     expect(() => assertRoleGrants([{ role: 'cleaning', storeId: null }])).toThrow()
     expect(() =>
       assertRoleGrants([
-        { role: 'store_staff', storeId: 1 },
-        { role: 'store_staff', storeId: 1 },
+        { role: 'admin', storeId: 1 },
+        { role: 'admin', storeId: 1 },
       ]),
     ).toThrow()
     expect(() => assertRoleGrants([{ role: 'admin', storeId: null }])).not.toThrow()

@@ -168,23 +168,48 @@ describe('staff and roles (A-23)', () => {
   }
   const url = (t: string) => `https://example.com/admin/password/set?purpose=invite&token=${t}`
 
+  it('lets admins manage cleaning staff but prevents promotion or changing privileged accounts', async () => {
+    const { deps } = world()
+    const id = await makeInviteStaff(deps)(
+      admin,
+      { email: 'cleaner@example.com', name: '清掃', grants: [{ role: 'cleaning', storeId: 1 }] },
+      url,
+    )
+    await expect(makeSetStaffEnabled(deps)(admin, id, false)).resolves.toBeUndefined()
+    await expect(
+      makeUpdateStaff(deps)(admin, id, {
+        name: '清掃',
+        grants: [{ role: 'owner', storeId: null }],
+      }),
+    ).rejects.toMatchObject({ code: 'forbidden' })
+    await expect(
+      makeUpdateStaff(deps)(admin, 1, { name: '変更', grants: [{ role: 'cleaning', storeId: 1 }] }),
+    ).rejects.toMatchObject({ code: 'forbidden' })
+    await expect(makeSetStaffEnabled(deps)(admin, 1, false)).rejects.toMatchObject({
+      code: 'forbidden',
+    })
+    await expect(makeSetStaffEnabled(deps)(admin, 2, false)).rejects.toMatchObject({
+      code: 'forbidden',
+    })
+  })
+
   it('invites new staff (owners only) and requires a store for store roles', async () => {
     const { deps, invites, staff } = world()
     const invite = makeInviteStaff(deps)
-    const storeStaff: RoleGrant[] = [{ role: 'store_staff', storeId: null }]
+    const storeStaff: RoleGrant[] = [{ role: 'cleaning', storeId: null }]
     await expect(
       invite(owner, { email: 'a@example.com', name: '田牧', grants: storeStaff }, url),
     ).rejects.toMatchObject({ code: 'store_required' })
     await expect(
       invite(
         admin,
-        { email: 'a@example.com', name: '田牧', grants: [{ role: 'store_staff', storeId: 1 }] },
+        { email: 'a@example.com', name: '田牧', grants: [{ role: 'admin', storeId: 1 }] },
         url,
       ),
     ).rejects.toMatchObject({ code: 'forbidden' })
     const id = await invite(
       owner,
-      { email: ' A@Example.com ', name: '田牧', grants: [{ role: 'store_staff', storeId: 1 }] },
+      { email: ' A@Example.com ', name: '田牧', grants: [{ role: 'admin', storeId: 1 }] },
       url,
     )
     expect(staff.find((s) => s.id === id)).toMatchObject({

@@ -96,6 +96,10 @@ export class KyselyMyPageRepository implements MyPageRepository {
         'b.booking_code',
         'b.status',
         'b.member_id',
+        'b.contact_family_name',
+        'b.contact_given_name',
+        'ar.location_text as assigned_location',
+        'rr.location_text as requested_location',
         's.id as store_id',
         's.code as store_code',
         's.name as store_name',
@@ -123,6 +127,16 @@ export class KyselyMyPageRepository implements MyPageRepository {
         'b.discount_amount',
         'b.total_amount',
       ])
+      .select((eb) =>
+        eb
+          .selectFrom('room_photos as p')
+          .select('p.asset_url')
+          .where('p.room_id', '=', eb.fn.coalesce('ar.id', 'rr.id'))
+          .orderBy('p.sort_order')
+          .orderBy('p.id')
+          .limit(1)
+          .as('room_photo_url'),
+      )
       .where('b.booking_code', '=', bookingCode)
       .executeTakeFirst()
     if (!b) return null
@@ -191,6 +205,11 @@ export class KyselyMyPageRepository implements MyPageRepository {
       bookingCode: b.booking_code,
       status: b.status as BookingStatus,
       memberId: b.member_id === null ? null : Number(b.member_id),
+      bookingName: [b.contact_family_name, b.contact_given_name].filter(Boolean).join(' '),
+      roomGuide: {
+        photoUrl: b.room_photo_url,
+        location: b.assigned_location ?? b.requested_location,
+      },
       store: {
         id: Number(b.store_id),
         code: b.store_code,
@@ -367,6 +386,7 @@ export class KyselyMyPageRepository implements MyPageRepository {
         'm.family_name',
         'm.given_name',
         'm.email_normalized',
+        'm.notification_channel',
         'm.status',
         'l.friend_status',
         'l.linked_at',
@@ -381,6 +401,7 @@ export class KyselyMyPageRepository implements MyPageRepository {
       familyName: row.family_name,
       givenName: row.given_name,
       email: row.email_normalized,
+      notificationChannel: row.notification_channel === 'line' ? 'line' : 'email',
       status: row.status as MemberStatus,
       line: row.linked_at
         ? {
@@ -395,6 +416,15 @@ export class KyselyMyPageRepository implements MyPageRepository {
     await this.db
       .updateTable('members')
       .set({ email_normalized: email, email_verified_at: null })
+      .where('id', '=', memberId)
+      .where('status', '<>', 'withdrawn')
+      .execute()
+  }
+
+  async updateNotificationChannel(memberId: number, channel: 'email' | 'line') {
+    await this.db
+      .updateTable('members')
+      .set({ notification_channel: channel })
       .where('id', '=', memberId)
       .where('status', '<>', 'withdrawn')
       .execute()

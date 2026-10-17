@@ -1,5 +1,6 @@
 import { minuteOfBusinessDay } from '@jancube/domain'
 import Link from 'next/link'
+import { BookingShare } from '@/components/BookingShare'
 import {
   type BadgeKind,
   buttonDanger,
@@ -74,6 +75,18 @@ export default async function BookingDetailPage({
               <>
                 <p className="mt-3 text-5xl font-bold tabular-nums">{room.name}</p>
                 <p className="mt-2 text-sub">{b.roomGroupName}</p>
+                {b.roomGuide?.location && <p className="mt-2 text-sm">{b.roomGuide.location}</p>}
+                {b.roomGuide?.photoUrl && (
+                  // biome-ignore lint/performance/noImgElement: room-master URLs are not a fixed image-host allowlist
+                  <img
+                    src={b.roomGuide.photoUrl}
+                    alt={`${room.name}の扉`}
+                    width={640}
+                    height={360}
+                    referrerPolicy="no-referrer"
+                    className="mt-3 aspect-video w-full rounded-lg object-cover"
+                  />
+                )}
               </>
             ) : (
               <p className="mt-3 text-sub">
@@ -207,6 +220,7 @@ export default async function BookingDetailPage({
         )}
 
         <div className="space-y-3">
+          {view.shareText && <BookingShare text={view.shareText} />}
           {view.canChange && (
             <Link href={bookingPath(b.bookingCode, '/change')} className={buttonOutline}>
               予約を変更する

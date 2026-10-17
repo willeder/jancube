@@ -24,7 +24,7 @@ async function main() {
       `SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema='${schema}'`,
     ),
     checkConstraints: await one(
-      `SELECT COUNT(*) FROM information_schema.table_constraints WHERE table_schema='${schema}' AND constraint_type='CHECK'`,
+      `SELECT COUNT(*) FROM information_schema.check_constraints WHERE constraint_schema='${schema}'`,
     ),
     generatedColumns: await one(
       `SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='${schema}' AND generation_expression IS NOT NULL AND generation_expression <> ''`,
@@ -60,6 +60,12 @@ async function main() {
   await db.query('ROLLBACK')
   console.log(target, JSON.stringify(report, null, 2))
   await db.end()
+  if (
+    ['checkWeekday', 'checkStoreStatus', 'fkBusinessHours'].some(
+      (key) => !String(report[key]).startsWith('enforced ('),
+    )
+  )
+    throw new Error('Database constraints are not enforced')
 }
 main().catch((e) => {
   console.error(e.message)

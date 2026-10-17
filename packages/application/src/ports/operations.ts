@@ -69,9 +69,15 @@ export interface OperationsRepository {
   /** Confirmed bookings ending after `from` and starting before `to` that have no access key at all. */
   bookingsWithoutKey(from: Date, to: Date, limit: number): Promise<number[]>
   /** Active provisional assignments of confirmed bookings starting before `until`. */
-  provisionalAssignments(
-    until: Date,
-  ): Promise<{ assignmentId: number; start: Date; finalizeMinutes: number | null }[]>
+  provisionalAssignments(until: Date): Promise<
+    {
+      assignmentId: number
+      start: Date
+      finalizeMinutes: number | null
+      businessDate?: LocalDate
+      timezone?: string
+    }[]
+  >
   finalizeAssignments(assignmentIds: readonly number[], at: Date): Promise<number>
   /** booking_cancellations amounts for the cancellation notice. */
   cancellation(bookingId: number): Promise<{ fee: number; refund: number } | null>

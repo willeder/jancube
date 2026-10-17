@@ -272,7 +272,7 @@ describe('individual coupon grant (A-13)', () => {
     const { deps } = world()
     const staff: StaffActor = {
       staffId: 2,
-      access: { staffId: 2, grants: [{ role: 'store_staff', storeId: 1 }] },
+      access: { staffId: 2, grants: [{ role: 'cleaning', storeId: 1 }] },
     }
     await expect(
       makeGrantCouponToMember(deps)(staff, {

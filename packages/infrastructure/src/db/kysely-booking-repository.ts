@@ -52,16 +52,29 @@ export async function withInventoryDayLock<T>(
     .execute()
 
   return withDeadlockRetry(() =>
-    db.transaction().execute(async (trx) => {
-      await trx
-        .selectFrom('inventory_day_locks')
-        .select('id')
-        .where('room_group_id', '=', roomGroupId)
-        .where('business_date', '=', dateValue(businessDate))
-        .forUpdate()
-        .execute()
-      return fn(trx)
-    }),
+    // TiDB's repeatable-read snapshot starts before a waiting FOR UPDATE acquires its lock.
+    // Read committed makes the subsequent availability reads include the preceding holder's commit.
+    db
+      .transaction()
+      .setIsolationLevel('read committed')
+      .execute(async (trx) => {
+        // Serialize the group across dates as overnight bookings and cleaning buffers can overlap.
+        // Other groups/stores remain independent; no network-provider calls run under this lock.
+        await trx
+          .selectFrom('room_groups')
+          .select('id')
+          .where('id', '=', roomGroupId)
+          .forUpdate()
+          .executeTakeFirstOrThrow()
+        await trx
+          .selectFrom('inventory_day_locks')
+          .select('id')
+          .where('room_group_id', '=', roomGroupId)
+          .where('business_date', '=', dateValue(businessDate))
+          .forUpdate()
+          .execute()
+        return fn(trx)
+      }),
   )
 }
 

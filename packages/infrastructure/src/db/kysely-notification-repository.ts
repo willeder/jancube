@@ -72,6 +72,7 @@ export class KyselyNotificationRepository
       .select([
         'm.id',
         'm.email_normalized',
+        'm.notification_channel',
         'm.phone_e164',
         'm.status',
         'l.line_user_id',
@@ -83,6 +84,7 @@ export class KyselyNotificationRepository
     return {
       memberId: Number(row.id),
       email: row.email_normalized,
+      notificationChannel: row.notification_channel === 'line' ? 'line' : 'email',
       phone: row.phone_e164,
       lineUserId: row.line_user_id && row.friend_status !== 'blocked' ? row.line_user_id : null,
     }
@@ -214,7 +216,21 @@ export class KyselyNotificationRepository
         'rr.name as requested_room',
         'b.guest_count',
         'b.total_amount',
+        'b.contact_family_name',
+        'b.contact_given_name',
+        's.entry_guide_text',
+        'ar.location_text as assigned_location',
+        'rr.location_text as requested_location',
       ])
+      .select((eb) =>
+        eb
+          .selectFrom('room_photos as p')
+          .select('p.asset_url')
+          .where('p.room_id', '=', eb.fn.coalesce('ar.id', 'rr.id'))
+          .orderBy('p.sort_order')
+          .limit(1)
+          .as('room_photo'),
+      )
       .where('b.id', '=', bookingId)
       .executeTakeFirst()
     if (!row) return null
@@ -231,6 +247,10 @@ export class KyselyNotificationRepository
       end: row.ends_at,
       roomTypeName: row.type_name,
       roomName: row.assigned_room ?? row.requested_room,
+      customerName: [row.contact_family_name, row.contact_given_name].filter(Boolean).join(' '),
+      entryGuideText: row.entry_guide_text,
+      roomLocation: row.assigned_location ?? row.requested_location,
+      roomPhotoUrl: row.room_photo,
       guestCount: row.guest_count,
       total: Number(row.total_amount),
     }

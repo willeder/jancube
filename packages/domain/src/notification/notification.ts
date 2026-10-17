@@ -12,6 +12,7 @@ export const NOTIFICATION_EVENTS = [
   'coupon_granted',
   'payment_link',
   'usage_reminder',
+  'usage_completed',
 ] as const
 export type NotificationEvent = (typeof NOTIFICATION_EVENTS)[number]
 

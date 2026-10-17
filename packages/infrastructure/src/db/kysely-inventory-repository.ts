@@ -12,6 +12,15 @@ export class KyselyInventoryRepository implements InventoryRepository {
   constructor(private readonly db: Database) {}
 
   async load(storeId: number, from: Date, to: Date, now: Date): Promise<StoreInventory> {
+    // Include neighboring bookings whose cleaning buffer can intersect the requested window.
+    const store = await this.db
+      .selectFrom('stores')
+      .select('cleaning_buffer_minutes')
+      .where('id', '=', storeId)
+      .executeTakeFirstOrThrow()
+    const padding = store.cleaning_buffer_minutes * 60_000
+    const paddedFrom = new Date(from.getTime() - padding)
+    const paddedTo = new Date(to.getTime() + padding)
     const [groups, rooms, bookings, blocks] = await Promise.all([
       this.db
         .selectFrom('room_groups as g')
@@ -48,8 +57,8 @@ export class KyselyInventoryRepository implements InventoryRepository {
           'b.ends_at',
         ])
         .where('b.store_id', '=', storeId)
-        .where('b.starts_at', '<', to)
-        .where('b.ends_at', '>', from)
+        .where('b.starts_at', '<', paddedTo)
+        .where('b.ends_at', '>', paddedFrom)
         .where((eb) =>
           eb.or([
             eb('b.status', 'in', ['confirmed', 'completed']),
@@ -63,8 +72,8 @@ export class KyselyInventoryRepository implements InventoryRepository {
         .select(['k.room_id', 'k.starts_at', 'k.ends_at'])
         .where('r.store_id', '=', storeId)
         .where('k.released_at', 'is', null)
-        .where('k.starts_at', '<', to)
-        .where('k.ends_at', '>', from)
+        .where('k.starts_at', '<', paddedTo)
+        .where('k.ends_at', '>', paddedFrom)
         .execute(),
     ])
 

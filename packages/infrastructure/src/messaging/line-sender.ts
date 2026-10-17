@@ -1,4 +1,4 @@
-import type { LineReplySender, LineSender } from '@jancube/application'
+import type { LineReplyChoice, LineReplySender, LineSender } from '@jancube/application'
 
 /**
  * LINE Messaging API: push (https://developers.line.biz/en/reference/messaging-api/#send-push-message)
@@ -23,14 +23,40 @@ export class LineMessagingSender implements LineSender, LineReplySender {
     return { providerMessageId: data.sentMessages?.[0]?.id ?? retryKey }
   }
 
-  async reply(replyToken: string, text: string) {
+  async reply(replyToken: string, text: string, choices: readonly LineReplyChoice[] = []) {
     const res = await fetch('https://api.line.me/v2/bot/message/reply', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.config.channelAccessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ replyToken, messages: [{ type: 'text', text }] }),
+      body: JSON.stringify({
+        replyToken,
+        messages: [
+          {
+            type: 'text',
+            text,
+            ...(choices.length
+              ? {
+                  quickReply: {
+                    items: choices.slice(0, 13).map((choice) => ({
+                      type: 'action',
+                      action:
+                        'uri' in choice
+                          ? { type: 'uri', label: choice.label.slice(0, 20), uri: choice.uri }
+                          : {
+                              type: 'postback',
+                              label: choice.label.slice(0, 20),
+                              data: choice.data,
+                              displayText: choice.label,
+                            },
+                    })),
+                  },
+                }
+              : {}),
+          },
+        ],
+      }),
     })
     if (!res.ok) throw new Error(`LINE reply failed: ${res.status} ${await res.text()}`)
   }
@@ -43,7 +69,8 @@ export class ConsoleLineSender implements LineSender, LineReplySender {
     return { providerMessageId: `dev-line-${Date.now()}` }
   }
 
-  async reply(_replyToken: string, text: string) {
+  async reply(_replyToken: string, text: string, choices: readonly LineReplyChoice[] = []) {
     console.info(`[line:dev] reply\n${text}`)
+    console.info(choices)
   }
 }

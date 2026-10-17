@@ -45,9 +45,11 @@ describe('LINE webhook signature (x-line-signature)', () => {
         replyToken: 'reply-1',
         timestamp: new Date(1_793_500_000_000),
         isRedelivery: false,
+        text: null,
+        postbackData: null,
       },
       expect.objectContaining({ type: 'message', isRedelivery: true, replyToken: 'reply-2' }),
-      expect.objectContaining({ type: 'other', rawType: 'postback', userId: null }),
+      expect.objectContaining({ type: 'message', rawType: 'postback', userId: null }),
     ])
     // Events without webhookEventId get a stable content hash as id.
     expect(payload.events[1]?.eventId).toMatch(/^[0-9a-f]{64}$/)

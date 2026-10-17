@@ -1,4 +1,4 @@
-import { DomainError } from '@jancube/domain'
+import { DomainError, normalizeRequiredEmail } from '@jancube/domain'
 import { makeGetActiveHold } from '../booking/hold'
 import type { BookingRepository } from '../ports/booking-repository'
 import type { Clock } from '../ports/clock'
@@ -20,6 +20,7 @@ export function makeAttachMemberToHold(deps: {
     if (hold.memberId !== null && hold.memberId !== memberId) {
       throw new DomainError('hold_not_found', 'this booking belongs to another member')
     }
+    normalizeRequiredEmail(member.email)
     await deps.bookings.assignMember(requestKey, {
       memberId: member.id,
       familyName: member.familyName,

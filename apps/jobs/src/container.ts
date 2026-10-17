@@ -7,6 +7,7 @@ import {
   makeNotifyBooking,
   makeOperations,
   makeProcessOutbox,
+  makeUsageCompletedNotice,
   type OutboxHandler,
   type PaymentGateway,
   systemClock,
@@ -185,14 +186,25 @@ function buildJobs(db: ReturnType<typeof createDb>, config: JobsConfig) {
 
   /** Business events → follow-up work. Each handler is idempotent. */
   const confirmedNotice = bookingConfirmedHandler(notifyBooking)
+  const completionNotice = makeUsageCompletedNotice({
+    booking: (id) => operationsRepository.booking(id),
+    outbox: new KyselyOutboxRepository(db),
+    clock,
+    notify: notifyBooking,
+  })
   const handlers: Record<string, OutboxHandler> = {
     'booking.confirmed': async (event) => {
       await confirmedNotice(event)
       // Booked after the day-before batch: room, cleaning, code and notice right away.
       await operations.onBookingConfirmed(event)
+      await completionNotice.schedule(event.aggregateId)
     },
     'booking.canceled': operations.onBookingCanceled,
-    'booking.changed': operations.onBookingChanged,
+    'booking.changed': async (event) => {
+      await operations.onBookingChanged(event)
+      await completionNotice.schedule(event.aggregateId)
+    },
+    'booking.usage_completed': completionNotice.handle,
   }
 
   return {

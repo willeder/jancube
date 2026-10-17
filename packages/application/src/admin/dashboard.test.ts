@@ -4,7 +4,7 @@ import { fakeBookingDeps, jst } from '../booking/test-fixtures'
 import type { AdminBookingQueries, AlertWorkRepository, StoreFilter } from '../ports/admin-bookings'
 import { makeGetDashboard, monthRange } from './dashboard'
 
-const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'store_staff', storeId: 1 }] }
+const storeStaff: StaffAccess = { staffId: 7, grants: [{ role: 'admin', storeId: 1 }] }
 
 describe('monthRange', () => {
   it('covers the calendar month of a date', () => {

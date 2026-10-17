@@ -61,6 +61,29 @@ async function pendingOrFail(): Promise<PendingLineLink> {
   return pending
 }
 
+/** A verified LINE identity can register without a phone number or an SMS challenge. */
+export async function registerLineOnlyAction(_prev: FormState, form: FormData): Promise<FormState> {
+  let next: string
+  try {
+    const pending = await pendingOrFail()
+    const { memberId } = await withContainer((c) =>
+      c.registerLineMember(pending, {
+        familyName: String(form.get('familyName') ?? ''),
+        givenName: String(form.get('givenName') ?? ''),
+        email: String(form.get('email') ?? ''),
+        agreesToTerms: form.get('agreesToTerms') === 'on',
+        confirmsAdult: form.get('confirmsAdult') === 'on',
+      }),
+    )
+    await signedIn(memberId)
+    await clearPendingLineLink()
+    next = `/liff/link/done?next=${encodeURIComponent(pending.next)}`
+  } catch (error) {
+    return { error: toUserMessage(error) }
+  }
+  redirect(next)
+}
+
 /** L-03 step 1: send the SMS code (same rules as C-05). */
 export async function liffSendCodeAction(_prev: FormState, form: FormData): Promise<FormState> {
   try {

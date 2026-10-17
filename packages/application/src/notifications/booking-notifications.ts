@@ -21,6 +21,10 @@ export const BOOKING_TEMPLATE_VARIABLES = [
   'guestCount',
   'total',
   'myPageUrl',
+  'customerName',
+  'roomLocation',
+  'roomPhotoUrl',
+  'entryGuideText',
 ] as const
 
 export function bookingTemplateValues(
@@ -40,6 +44,10 @@ export function bookingTemplateValues(
     guestCount: `${view.guestCount}名`,
     total: `${view.total.toLocaleString('ja-JP')}円`,
     myPageUrl: `${appUrl}/mypage/bookings/${view.bookingCode}`,
+    customerName: view.customerName ?? '',
+    roomLocation: view.roomLocation ?? '',
+    roomPhotoUrl: view.roomPhotoUrl ?? '',
+    entryGuideText: view.entryGuideText ?? '',
   }
 }
 
@@ -66,7 +74,7 @@ export function makeNotifyBooking(deps: {
       memberId: view.memberId,
       bookingId,
       values: { ...bookingTemplateValues(view, deps.appUrl), ...extra.values },
-      secretValueNames: extra.secretValueNames,
+      secretValueNames: ['customerName', ...(extra.secretValueNames ?? [])],
       deduplicationKey: `${event}:${bookingId}${extra.dedupSuffix ? `:${extra.dedupSuffix}` : ''}`,
     })
   }

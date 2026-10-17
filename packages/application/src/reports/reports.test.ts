@@ -23,7 +23,7 @@ import { assertReportPeriod, resolveStoreScope } from './scope'
 
 const owner: StaffAccess = { staffId: 1, grants: [{ role: 'owner', storeId: null }] }
 const storeAdmin: StaffAccess = { staffId: 2, grants: [{ role: 'admin', storeId: 10 }] }
-const storeStaff: StaffAccess = { staffId: 3, grants: [{ role: 'store_staff', storeId: 10 }] }
+const storeStaff: StaffAccess = { staffId: 3, grants: [{ role: 'cleaning', storeId: 10 }] }
 
 const STORE = { id: 10, code: 'JC001', name: '大阪本町店', timezone: 'Asia/Tokyo' }
 

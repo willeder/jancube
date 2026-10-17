@@ -40,6 +40,20 @@ import type { RuntimeConfig } from './runtime-config'
 
 /** Adapters shared by every feature area, built once per request. */
 export function buildDeps(db: ReturnType<typeof createDb>, config: RuntimeConfig) {
+  if (!config.isDevelopment && !config.resendApiKey)
+    throw new Error('RESEND_API_KEY is not configured')
+  if (!config.isDevelopment && !config.stripe) throw new Error('Stripe is not configured')
+  if (!config.isDevelopment) {
+    const url = new URL(config.appUrl)
+    if (
+      url.protocol !== 'https:' ||
+      ['localhost', '[::1]', '0.0.0.0'].includes(url.hostname) ||
+      url.hostname.startsWith('127.') ||
+      url.username ||
+      url.password
+    )
+      throw new Error('APP_URL must be the deployed HTTPS booking URL')
+  }
   const clock = systemClock
   const stores = new KyselyStoreRepository(db)
   const booking: BookingDeps = {
