@@ -5,29 +5,29 @@ import { ActionForm } from '@/components/operations/ActionForm'
 import { localTime, remaining } from '@/components/operations/time'
 import { requireCleaningSelection } from '@/server/cleaning-session'
 import { withContainer } from '@/server/container'
-import { cleaningTaskAction, roomMemoAction } from '@/server/operations-actions'
+import { cleaningTaskAction } from '@/server/operations-actions'
 
 export const dynamic = 'force-dynamic'
 
-const small = 'rounded-lg px-3 py-2 text-sm font-bold disabled:opacity-60'
+const small = 'rounded-[9px] px-3.5 py-[7px] text-[13px] font-bold disabled:opacity-60'
 
 function TaskCard({
   task,
   typeName,
-  storeId,
   detail,
+  urgent = false,
 }: {
   task: CleaningTask
   typeName: string
-  storeId: number
   detail?: string
+  urgent?: boolean
 }) {
   return (
-    <div className="space-y-2 rounded-xl border border-line bg-white p-3">
+    <div className={`cleaning-card space-y-2 ${urgent ? 'cleaning-task-urgent' : ''}`}>
       <div className="flex items-center justify-between gap-2">
         <div>
           <span className="font-bold">{task.roomName}</span>{' '}
-          <span className="text-xs text-sub">{typeName}</span>
+          <span className="ml-1 text-xs text-sub">{typeName}</span>
           {task.status === 'in_progress' && (
             <span className="ml-1 text-xs font-bold text-brand-dark">清掃中</span>
           )}
@@ -46,34 +46,21 @@ function TaskCard({
           <ActionForm action={cleaningTaskAction}>
             <input type="hidden" name="taskId" value={task.id} />
             <input type="hidden" name="step" value="complete" />
-            <button type="submit" className={`${small} bg-brand text-white`}>
+            <button
+              type="submit"
+              className={`${small} ${urgent ? 'bg-alert' : 'bg-brand'} text-white`}
+            >
               清掃完了
             </button>
           </ActionForm>
         </div>
       </div>
-      <details>
-        <summary className="cursor-pointer rounded-lg border border-line py-2 text-center text-sm font-bold text-brand-dark">
-          ✎ 活動メモを残す
-        </summary>
-        <ActionForm action={roomMemoAction} className="mt-2 space-y-2">
-          <input type="hidden" name="source" value="cleaning" />
-          <input type="hidden" name="storeId" value={storeId} />
-          <input type="hidden" name="roomId" value={task.roomId} />
-          <input type="hidden" name="taskId" value={task.id} />
-          <textarea
-            name="body"
-            required
-            maxLength={500}
-            rows={3}
-            className="w-full rounded-lg border border-line p-2 text-sm"
-            placeholder="例）卓のクロスに汚れがあり交換しました"
-          />
-          <button type="submit" className={`${small} w-full bg-brand text-white`}>
-            記録する
-          </button>
-        </ActionForm>
-      </details>
+      <Link
+        href={`/cleaning/memo?room=${task.roomId}&task=${task.id}`}
+        className="cleaning-memo-link"
+      >
+        ✎ 活動メモを残す
+      </Link>
     </div>
   )
 }
@@ -97,7 +84,7 @@ export default async function CleaningTasksPage({
 
   return (
     <>
-      <section className="rounded-xl border border-line bg-white p-3 text-sm">
+      <section className="cleaning-card text-sm">
         <div className="flex justify-between">
           <span className="text-sub">担当店舗</span>
           <span className="font-bold">
@@ -118,8 +105,8 @@ export default async function CleaningTasksPage({
       {done && <Notice tone="green">記録しました</Notice>}
       {memo && <Notice tone="green">活動メモを記録しました</Notice>}
 
-      <section className="rounded-xl border border-line bg-white p-3">
-        <h2 className="font-bold">本日の開店前清掃</h2>
+      <section className="cleaning-card border-brand bg-brand-pale text-brand-dark">
+        <h1 className="font-bold">本日の開店前清掃</h1>
         <p className="mt-1 text-xs text-sub">
           {due
             ? `目安 ${localTime(planned ?? null, tz)}開始 / 期限 ${localTime(due, tz)}(開店)・現在 ${localTime(data.now, tz)}`
@@ -137,9 +124,7 @@ export default async function CleaningTasksPage({
       {data.openingOpen.length === 0 ? (
         <p className="text-sm text-sub">未清掃の部屋はありません</p>
       ) : (
-        data.openingOpen.map((t) => (
-          <TaskCard key={t.id} task={t} typeName={typeOf(t.roomId)} storeId={data.store.id} />
-        ))
+        data.openingOpen.map((t) => <TaskCard key={t.id} task={t} typeName={typeOf(t.roomId)} />)
       )}
 
       <h2 className="font-bold">スポット清掃(至急)</h2>
@@ -151,7 +136,7 @@ export default async function CleaningTasksPage({
             key={t.id}
             task={t}
             typeName={typeOf(t.roomId)}
-            storeId={data.store.id}
+            urgent
             detail={`期限 ${localTime(t.dueAt, tz)}${t.bookingStart ? `(次の予約 ${localTime(t.bookingStart, tz)} 開始)` : ''}・残り ${remaining(t.dueAt, data.now)}`}
           />
         ))
@@ -166,7 +151,7 @@ export default async function CleaningTasksPage({
         本日の清掃ログを見る
       </Link>
       <Notice>
-        前日20時の割当バッチで翌日の清掃予定を作成します（仮・CQ-68）。当日の予約変更で割当が変わった場合は都度清掃が発生します
+        前日20時の割当時に翌日の清掃予定を作成します。当日の予約変更で割当が変わった場合は都度清掃が発生します
       </Notice>
     </>
   )

@@ -23,8 +23,8 @@ export default async function LiffLinkPage() {
 
   if (!pending) {
     return (
-      <main className="mx-auto max-w-md space-y-4 px-4 py-6">
-        <h1 className="text-lg font-bold">LINE連携</h1>
+      <main className="customer-content ">
+        <h1 className="text-base font-bold">LINE連携</h1>
         {member && signedIn?.link.linked ? (
           <>
             <p className="rounded-lg bg-brand-pale p-3 text-sm text-brand-dark">
@@ -55,9 +55,9 @@ export default async function LiffLinkPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-6">
+    <main className="customer-content ">
       <div>
-        <h1 className="text-lg font-bold">LINEでご利用を始める</h1>
+        <h1 className="text-base font-bold">LINEでご利用を始める</h1>
         <p className="mt-1 text-sm text-sub">
           電話番号・SMS認証なしでご登録いただけます。お名前とメールアドレスをご登録ください。
           すでに会員の方は、既存の会員情報と連携することもできます
@@ -79,7 +79,7 @@ export default async function LiffLinkPage() {
       )}
 
       {!member && <LinkProfileForm phoneFree />}
-      <details className="rounded-xl border border-line bg-white p-4 text-sm">
+      <details className="rounded-[14px] border border-line bg-white p-3.5 text-sm">
         <summary className="cursor-pointer font-bold">
           登録済みの電話番号で会員情報と連携する
         </summary>

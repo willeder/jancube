@@ -11,7 +11,7 @@ export function CancelForm({ bookingCode }: { bookingCode: string }) {
   return (
     <form action={action} className="space-y-3">
       <input type="hidden" name="bookingCode" value={bookingCode} />
-      <label className="block rounded-xl border border-line bg-white p-4 text-sm">
+      <label className="block rounded-[14px] border border-line bg-white p-3.5 text-sm">
         <span className="font-bold">キャンセル理由（任意）</span>
         <textarea
           name="reason"

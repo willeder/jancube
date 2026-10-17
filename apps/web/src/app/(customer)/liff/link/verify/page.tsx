@@ -28,9 +28,9 @@ export default async function LiffLinkVerifyPage({
   if (challenge.canRegister) redirect('/liff/link/profile')
 
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-6">
+    <main className="customer-content ">
       <div>
-        <h1 className="text-lg font-bold">認証コードの入力</h1>
+        <h1 className="text-base font-bold">認証コードの入力</h1>
         <p className="mt-1 text-sm text-sub">
           {challenge.maskedPhone} 宛に6桁のコードを送信しました
         </p>

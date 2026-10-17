@@ -9,7 +9,7 @@ import {
   withdrawAction,
 } from '@/server/mypage-actions'
 
-/** C-17 メールアドレス（任意）「保存する」 */
+/** C-17 メールアドレス（必須）「保存する」 */
 export function EmailForm({ email }: { email: string }) {
   const [state, action, pending] = useActionState(updateEmailAction, { error: null })
   return (

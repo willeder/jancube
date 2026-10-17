@@ -1,7 +1,8 @@
 import { utcToLocal } from '@jancube/domain'
 import { redirect } from 'next/navigation'
+import { BookingFlow } from '@/components/BookingFlow'
 import { HoldCountdown } from '@/components/HoldCountdown'
-import { ErrorPanel, StoreBar } from '@/components/StoreBar'
+import { ErrorPanel } from '@/components/StoreBar'
 import { dateLabel } from '@/lib/format'
 import { withContainer } from '@/server/container'
 import { isDomainError, toUserMessage } from '@/server/errors'
@@ -31,46 +32,41 @@ export default async function PaymentPage({
   const claimed = coupons.find((c) => String(c.grantId) === coupon && c.discount !== null)
 
   return (
-    <>
-      <StoreBar storeName={hold.storeName} backHref="/booking/confirm" />
-      <main className="mx-auto max-w-md space-y-4 px-4 py-5">
-        <div>
-          <h1 className="text-lg font-bold">クーポンとお支払い方法</h1>
-          <p className="mt-1 text-sm text-sub">
-            {dateLabel(hold.businessDate)} / {hold.roomGroupName}
-            {hold.requestedRoomName ? ` ${hold.requestedRoomName}` : ''}（{hold.bookingCode}）
-          </p>
-        </div>
-        {canceled && (
-          <p className="rounded-lg bg-gold-pale p-3 text-sm">
-            お支払いは完了していません。内容をご確認のうえ、もう一度お進みください
-          </p>
-        )}
-        <PaymentForm
-          subtotal={hold.subtotal}
-          coupons={coupons.map((c) => ({
-            grantId: c.grantId,
-            name: c.couponName,
-            note: c.conditionsNote,
-            // Validity ends are exclusive instants; show the last day they can be used.
-            expiresAt: dateLabel(
-              utcToLocal(new Date(c.expiresAt.getTime() - 1), hold.timezone).date,
-            ),
-            discount: c.discount,
-          }))}
-          initialGrantId={claimed?.grantId ?? bestGrantId}
-          codeForm={<CouponCodeForm />}
-        />
-        <HoldCountdown
-          expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
-          storeCode={hold.storeCode}
-        />
-        <p className="text-xs text-sub">
-          お支払いにより、キャンセルポリシー（24時間前まで無料 / 24時間以内50% /
-          開始以降100%）に同意したものとみなします
+    <BookingFlow step={6} storeName={hold.storeName} backHref="/booking/confirm">
+      <div>
+        <h1 className="text-base font-bold">クーポンとお支払い方法</h1>
+        <p className="text-sm text-sub">
+          {dateLabel(hold.businessDate)} / {hold.roomGroupName}
+          {hold.requestedRoomName ? ` ${hold.requestedRoomName}` : ''}（{hold.bookingCode}）
         </p>
-      </main>
-    </>
+      </div>
+      {canceled && (
+        <p className="rounded-lg bg-gold-pale p-3 text-sm">
+          お支払いは完了していません。内容をご確認のうえ、もう一度お進みください
+        </p>
+      )}
+      <PaymentForm
+        subtotal={hold.subtotal}
+        coupons={coupons.map((c) => ({
+          grantId: c.grantId,
+          name: c.couponName,
+          note: c.conditionsNote,
+          // Validity ends are exclusive instants; show the last day they can be used.
+          expiresAt: dateLabel(utcToLocal(new Date(c.expiresAt.getTime() - 1), hold.timezone).date),
+          discount: c.discount,
+        }))}
+        initialGrantId={claimed?.grantId ?? bestGrantId}
+        codeForm={<CouponCodeForm />}
+      />
+      <HoldCountdown
+        expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
+        storeCode={hold.storeCode}
+      />
+      <p className="text-xs text-sub">
+        お支払いにより、キャンセルポリシー（24時間前まで無料 / 24時間以内50% /
+        開始以降100%）に同意したものとみなします
+      </p>
+    </BookingFlow>
   )
 }
 

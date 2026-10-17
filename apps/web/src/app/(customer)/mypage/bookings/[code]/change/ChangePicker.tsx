@@ -89,14 +89,17 @@ export function ChangePicker({
     <div>
       <p className="text-sm text-sub">① 開始の◯をタップ → ② 終了を選ぶ（30分単位）</p>
       <div className="mt-2 overflow-x-auto rounded-xl border border-line bg-white">
-        <table className="border-collapse text-xs">
+        <table className="w-max min-w-full border-collapse text-[11px]">
           <thead>
             <tr>
-              <th className="sticky left-0 z-10 min-w-24 bg-white p-2 text-left text-sub">
+              <th className="sticky left-0 z-10 w-20 min-w-20 bg-[#f6f5f1] px-1.5 py-1 text-left text-sub">
                 部屋タイプ
               </th>
               {day.lanes[0]?.slots.map((s) => (
-                <th key={s.start} className="min-w-8 p-1 text-center font-normal text-sub">
+                <th
+                  key={s.start}
+                  className="min-w-6 bg-[#f6f5f1] px-0 py-1 text-center text-[9.5px] font-normal text-sub"
+                >
                   {s.minuteOfDay % 60 === 0 ? hhmm(s.minuteOfDay) : ''}
                 </th>
               ))}
@@ -105,18 +108,19 @@ export function ChangePicker({
           <tbody>
             {day.lanes.map((lane) => (
               <tr key={lane.key} className="border-t border-line">
-                <th className="sticky left-0 z-10 bg-white p-2 text-left align-top font-normal">
+                <th className="sticky left-0 z-10 w-20 min-w-20 max-w-20 bg-white px-1.5 py-1 text-left align-top font-normal">
                   <div className="font-bold">{lane.label}</div>
                   <div className="text-sub">{yen(lane.hourlyRate)}/時</div>
                 </th>
                 {lane.slots.map((s) => (
-                  <td key={s.start} className="p-0.5 text-center">
+                  <td key={s.start} className="border border-line/50 p-0 text-center">
                     <button
                       type="button"
                       disabled={!s.available || pending}
                       onClick={() => onCell(lane, s)}
                       aria-label={`${lane.label} ${hhmm(s.minuteOfDay)}`}
-                      className={`h-8 w-7 rounded ${
+                      aria-pressed={Boolean(inRange(lane, s.minuteOfDay))}
+                      className={`h-[34px] w-6 ${
                         inRange(lane, s.minuteOfDay)
                           ? 'bg-brand text-white'
                           : s.available
@@ -142,14 +146,14 @@ export function ChangePicker({
           <h2 className="text-sm font-bold">
             {selection.lane.label} / {hhmm(selection.startMinute)}開始 — 終了時刻を選ぶ
           </h2>
-          <div className="mt-2 grid grid-cols-2 gap-2">
+          <div className="mt-2 flex min-w-0 gap-2 overflow-x-auto pb-2">
             {ends.map((e) => (
               <button
                 key={e.end}
                 type="button"
                 onClick={() => pickEnd(e)}
-                className={`rounded-lg border p-2 text-left text-xs ${
-                  end?.end === e.end ? 'border-brand bg-brand-pale' : 'border-line bg-white'
+                className={`min-w-[92px] shrink-0 rounded-xl border-[1.5px] px-3 py-[7px] text-center text-[10.5px] ${
+                  end?.end === e.end ? 'border-brand bg-brand text-white' : 'border-line bg-white'
                 }`}
               >
                 <div className="font-bold">{hhmm(e.endMinuteOfDay)}まで</div>
@@ -198,7 +202,7 @@ function Confirm({
   const { settlement } = quote
   const blocked = settlement.kind === 'increase_not_allowed'
   return (
-    <section className="mt-4 space-y-3 rounded-xl border border-line bg-white p-4 text-sm">
+    <section className="mt-4 space-y-3 rounded-[14px] border border-line bg-white p-3.5 text-sm">
       <dl className="space-y-1">
         <div className="flex justify-between gap-3">
           <dt className="text-sub">変更後</dt>

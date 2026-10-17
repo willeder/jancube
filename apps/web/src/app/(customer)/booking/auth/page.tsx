@@ -1,8 +1,9 @@
 import type { BookingSummary } from '@jancube/application'
 import { redirect } from 'next/navigation'
 import { PhoneForm } from '@/components/auth/PhoneForm'
+import { BookingFlow } from '@/components/BookingFlow'
 import { HoldCountdown } from '@/components/HoldCountdown'
-import { ErrorPanel, StoreBar } from '@/components/StoreBar'
+import { ErrorPanel } from '@/components/StoreBar'
 import { withContainer } from '@/server/container'
 import { toUserMessage } from '@/server/errors'
 import { readHoldKey } from '@/server/hold-cookie'
@@ -23,21 +24,18 @@ export default async function PhonePage() {
   if (memberId && hold.memberId === memberId) redirect('/booking/payment')
 
   return (
-    <>
-      <StoreBar storeName={hold.storeName} backHref="/booking/confirm" />
-      <main className="mx-auto max-w-md space-y-4 px-4 py-5">
-        <div>
-          <h1 className="text-lg font-bold">電話番号の確認</h1>
-          <p className="mt-1 text-sm text-sub">
-            SMSで認証コードをお送りします。ご登録済みの方はそのままログインになります
-          </p>
-        </div>
-        <PhoneForm />
-        <HoldCountdown
-          expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
-          storeCode={hold.storeCode}
-        />
-      </main>
-    </>
+    <BookingFlow step={5} storeName={hold.storeName} backHref="/booking/confirm">
+      <div>
+        <h1 className="text-base font-bold">電話番号の確認</h1>
+        <p className="text-sm text-sub">
+          SMSで認証コードをお送りします。ご登録済みの方はそのままログインになります
+        </p>
+      </div>
+      <PhoneForm />
+      <HoldCountdown
+        expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
+        storeCode={hold.storeCode}
+      />
+    </BookingFlow>
   )
 }

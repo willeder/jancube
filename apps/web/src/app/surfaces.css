@@ -1,0 +1,426 @@
+/* Shared Figma screen measurements; phone bezels and review annotations are excluded. */
+.customer-shell,
+.cleaning-shell,
+.admin-surface {
+  min-height: 100dvh;
+  font-family: "Jancube Booking JP", "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.customer-shell .customer-header {
+  max-width: 376px;
+  min-height: 47px;
+  font-size: 15px;
+}
+
+.customer-shell .customer-header span {
+  font-size: 11px;
+}
+
+.customer-shell .customer-account {
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
+}
+
+.customer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 376px;
+  min-width: 0;
+  margin-inline: auto;
+  padding: 12px 14px 20px;
+  overflow-wrap: anywhere;
+}
+
+.customer-page-header {
+  max-width: 376px;
+  margin-inline: auto;
+  padding: 8px 14px 0;
+}
+
+.customer-content > *,
+.cleaning-content > *,
+.admin-content > * {
+  min-width: 0;
+}
+
+.customer-content h1,
+.customer-content > h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.customer-content > div:has(> h1) {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.customer-content > div:has(> h1) > p {
+  margin-top: 0;
+}
+
+.customer-content .text-sm {
+  font-size: 12.8px;
+}
+
+.customer-content .auth-card {
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.customer-content
+  :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
+  min-width: 0;
+  border-width: 1.5px;
+  border-color: var(--color-line);
+  font-size: 16px;
+}
+
+.customer-content input::placeholder,
+.admin-surface input::placeholder,
+.cleaning-shell :is(input, textarea)::placeholder {
+  color: #c9c7c0;
+}
+
+.customer-content button[type="submit"].w-full {
+  border-radius: 12px;
+  padding: 13px 12px;
+  font-size: 15px;
+}
+
+.customer-content .hold-countdown {
+  padding: 8px 12px;
+  color: #7a6420;
+  font-size: 11.5px;
+}
+
+.customer-content .room-guide {
+  padding-block: 16px;
+}
+
+.customer-content .room-number {
+  padding-block: 24px;
+  font-size: 48px;
+  line-height: 1.5;
+}
+
+.customer-content .entry-code-card {
+  background: #f3f2ee;
+}
+
+.customer-shell :is(a, button, input, textarea, select, summary):focus-visible,
+.admin-surface :is(a, button, input, textarea, select, summary):focus-visible,
+.cleaning-shell :is(a, button, input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.customer-shell button:not(:disabled),
+.admin-surface button:not(:disabled),
+.cleaning-shell button:not(:disabled) {
+  cursor: pointer;
+}
+
+.admin-console {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--color-paper);
+}
+
+.admin-sidebar {
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
+  width: 206px;
+  height: 100dvh;
+  overflow-y: auto;
+  border-right: 1px solid var(--color-line);
+  background: white;
+  padding: 14px 10px;
+}
+
+.admin-sidebar-body {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+}
+
+.admin-menu-toggle {
+  display: none;
+}
+
+.admin-store-switcher {
+  margin-bottom: 14px;
+  padding-inline: 4px;
+}
+
+.admin-store-switcher select {
+  width: 100%;
+  border: 1.5px solid var(--color-brand);
+  border-radius: 8px;
+  background: white;
+  padding: 9px 10px;
+  color: var(--color-brand-dark);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-navigation {
+  flex: 1;
+}
+
+.admin-nav-link,
+.admin-nav-group > summary {
+  display: block;
+  margin-bottom: 3px;
+  border-radius: 9px;
+  padding: 10px 13px;
+  color: var(--color-sub);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.admin-nav-link:hover,
+.admin-nav-link[aria-current="page"] {
+  background: var(--color-brand-pale);
+  color: var(--color-brand-dark);
+}
+
+.admin-nav-group > summary {
+  display: list-item;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.admin-nav-group[open] > summary {
+  color: var(--color-brand-dark);
+}
+
+.admin-nav-group ul {
+  padding-left: 8px;
+}
+
+.admin-nav-group .admin-nav-link {
+  padding-block: 7px;
+  font-size: 11.5px;
+}
+
+.admin-staff-account {
+  margin-top: 16px;
+  border-top: 1px solid var(--color-line);
+  padding: 12px 4px 0;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+
+.admin-content {
+  min-width: 0;
+  flex: 1;
+  padding: 20px 26px;
+  overflow-wrap: anywhere;
+}
+
+.admin-content .text-sm {
+  font-size: 13px;
+}
+
+.admin-content .text-xs {
+  font-size: 11.5px;
+}
+
+.admin-card {
+  min-width: 0;
+}
+
+.admin-cleaning-tables .admin-card {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.admin-content form.flex > input[type="date"] {
+  width: 11rem;
+  max-width: 100%;
+}
+
+.admin-surface :is(a, button).inline-flex {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Let dense tables scroll locally instead of breaking identifiers and clock times mid-word. */
+.admin-table td {
+  overflow-wrap: normal;
+}
+
+.admin-card .admin-table th,
+.admin-card .admin-table td {
+  padding: 8px 11px;
+}
+
+.admin-surface :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]) {
+  min-width: 0;
+}
+
+.admin-surface input[type="checkbox"] {
+  accent-color: var(--color-brand);
+}
+
+.admin-auth-page h1 {
+  font-size: 17px;
+}
+
+.dashboard-stats .admin-stat {
+  min-width: 104px;
+}
+
+.cleaning-shell {
+  width: 100%;
+  max-width: 376px;
+  margin-inline: auto;
+  background: var(--color-paper);
+}
+
+.cleaning-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  min-height: 47px;
+  background: var(--color-brand-dark);
+  padding: 12px 16px;
+  color: white;
+  font-size: 15px;
+}
+
+.cleaning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px 20px;
+  overflow-wrap: anywhere;
+}
+
+.cleaning-content h1,
+.cleaning-content h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.cleaning-content .text-sm {
+  font-size: 12.8px;
+}
+
+.cleaning-card {
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.cleaning-card:not(.bg-brand-pale):not(.cleaning-task-urgent) {
+  background: white;
+}
+
+.cleaning-card.border-brand {
+  border-color: var(--color-brand);
+}
+
+.cleaning-task-urgent {
+  border-color: var(--color-alert);
+  background: var(--color-alert-pale);
+}
+
+.cleaning-task-urgent > div:first-child > div:first-child {
+  color: var(--color-alert);
+}
+
+.cleaning-memo-link {
+  display: block;
+  border: 1px solid var(--color-gold);
+  border-radius: 9px;
+  background: var(--color-gold-pale);
+  padding: 7px 12px;
+  text-align: center;
+  color: #8a6d1c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cleaning-primary,
+.cleaning-content button[type="submit"].w-full {
+  width: 100%;
+  border-radius: 12px;
+  background: var(--color-brand);
+  padding: 13px 12px;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cleaning-content :is(input, select, textarea):not([type="checkbox"]):not([type="hidden"]) {
+  min-width: 0;
+  font-size: 16px;
+}
+
+@media (max-width: 767px) {
+  .admin-console {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-line);
+    padding: 0;
+  }
+
+  .admin-menu-toggle {
+    display: flex;
+    width: 100%;
+    min-height: 47px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--color-brand-dark);
+    padding: 12px 16px;
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .admin-sidebar[data-open="false"] .admin-sidebar-body {
+    display: none;
+  }
+
+  .admin-sidebar[data-open="true"] .admin-sidebar-body {
+    padding: 14px 10px;
+  }
+
+  .admin-content {
+    padding: 16px 14px;
+  }
+
+  .admin-surface :is(input, select, textarea):not([type="checkbox"]):not([type="hidden"]) {
+    font-size: 16px;
+  }
+
+  .cleaning-header {
+    flex-wrap: wrap;
+  }
+}
+
+@media print {
+  .customer-content {
+    max-width: none;
+    padding: 0;
+  }
+}

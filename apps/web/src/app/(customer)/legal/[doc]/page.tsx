@@ -1,7 +1,7 @@
 import type { LegalDocumentType } from '@jancube/application'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Notice } from '@/components/MyPageParts'
+import { Notice, PageHeader } from '@/components/MyPageParts'
 import { ErrorPanel } from '@/components/StoreBar'
 import { localDate } from '@/lib/format'
 import { withContainer } from '@/server/container'
@@ -39,7 +39,7 @@ const BODIES: Record<Slug, { heading: string; text: string }[]> = {
   privacy: [
     {
       heading: '1. 取得する情報',
-      text: 'お名前、携帯電話番号、メールアドレス（任意）、ご予約・お支払いの履歴、LINE連携時のLINEユーザーIDを取得します。',
+      text: 'お名前、携帯電話番号、メールアドレス、ご予約・お支払いの履歴、LINE連携時のLINEユーザーIDを取得します。',
     },
     {
       heading: '2. 利用目的',
@@ -79,42 +79,44 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
   }
 
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-5">
-      <nav className="grid grid-cols-3 gap-1 rounded-xl bg-line/50 p-1 text-xs">
-        {(Object.keys(DOCUMENTS) as Slug[]).map((key) => (
-          <Link
-            key={key}
-            href={`/legal/${key}`}
-            className={`rounded-lg py-2 text-center font-bold ${
-              key === slug ? 'bg-white text-brand-dark shadow-sm' : 'text-sub'
-            }`}
-          >
-            {DOCUMENTS[key].label}
-          </Link>
-        ))}
-      </nav>
-      <div>
-        <h1 className="text-lg font-bold">{document.title}</h1>
-        <p className="mt-1 text-xs text-sub">
-          第 {document.version} 版 / {localDate(document.effectiveAt, 'Asia/Tokyo')} 適用
-        </p>
-      </div>
-      <Notice tone="warn">本文は仮のものです。正式な文面のご提供後に差し替えます</Notice>
-      <article className="space-y-4 rounded-xl border border-line bg-white p-4 text-sm leading-relaxed">
-        {BODIES[slug].map((section) => (
-          <section key={section.heading}>
-            <h2 className="font-bold">{section.heading}</h2>
-            <p className="mt-1">{section.text}</p>
-          </section>
-        ))}
-        {slug === 'terms' && (
-          <section id="age">
-            <h2 className="font-bold">年齢の確認</h2>
-            <p className="mt-1">本サービスは18歳以上の方のみご利用いただけます。</p>
-          </section>
-        )}
-      </article>
-    </main>
+    <>
+      <PageHeader backHref="/" title={document.title} />
+      <main className="customer-content">
+        <nav className="flex flex-wrap gap-2">
+          {(Object.keys(DOCUMENTS) as Slug[]).map((key) => (
+            <Link
+              key={key}
+              href={`/legal/${key}`}
+              className={`rounded-xl border-[1.5px] px-3 py-[7px] text-center text-[13px] font-bold ${
+                key === slug ? 'border-brand bg-brand text-white' : 'border-line bg-white text-ink'
+              }`}
+            >
+              {DOCUMENTS[key].label}
+            </Link>
+          ))}
+        </nav>
+        <div>
+          <p className="mt-1 text-xs text-sub">
+            第 {document.version} 版 / {localDate(document.effectiveAt, 'Asia/Tokyo')} 適用
+          </p>
+        </div>
+        <Notice tone="warn">本文は仮のものです。正式な文面のご提供後に差し替えます</Notice>
+        <article className="space-y-4 rounded-[14px] border border-line bg-white p-3.5 text-sm leading-relaxed">
+          {BODIES[slug].map((section) => (
+            <section key={section.heading}>
+              <h2 className="font-bold">{section.heading}</h2>
+              <p className="mt-1">{section.text}</p>
+            </section>
+          ))}
+          {slug === 'terms' && (
+            <section id="age">
+              <h2 className="font-bold">年齢の確認</h2>
+              <p className="mt-1">本サービスは18歳以上の方のみご利用いただけます。</p>
+            </section>
+          )}
+        </article>
+      </main>
+    </>
   )
 }
 

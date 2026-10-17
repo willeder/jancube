@@ -115,7 +115,7 @@ export default async function CleaningPage({
       </form>
       {done && <Notice tone="green">清掃タスクを更新しました</Notice>}
       {memo && <Notice tone="green">活動メモを記録しました</Notice>}
-      <div className="my-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="my-4 flex flex-wrap gap-3">
         <Stat value={`${board.stats.openingRemaining}室`} label="要清掃(開店前)" />
         <Stat value={`${board.stats.urgentSpots}室`} label="スポット清掃 至急" />
         <Stat value={`${board.stats.roomsInService}室`} label="稼働中の部屋" />
@@ -135,13 +135,26 @@ export default async function CleaningPage({
       ))}
 
       <h2 className="mt-4 mb-2 font-bold">部屋別 清掃状態</h2>
-      <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+      <div className="mb-3 flex flex-wrap gap-3 text-[11.5px] text-sub">
+        {[
+          ['清掃済', 'border-brand bg-white'],
+          ['未清掃', 'border-gold bg-gold-pale'],
+          ['スポット清掃 至急', 'border-alert bg-alert-pale'],
+          ['休止', 'border-line bg-paper'],
+        ].map(([label, color]) => (
+          <span key={label} className="inline-flex items-center gap-1">
+            <span aria-hidden className={`size-2.5 rounded-sm border ${color}`} />
+            {label}
+          </span>
+        ))}
+      </div>
+      <div className="mb-4 grid max-w-[890px] grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-[repeat(6,minmax(0,140px))]">
         {board.rooms.map((room) => {
           const state = roomState(room.roomId)
           return (
             <div
               key={room.roomId}
-              className={`rounded-xl border-2 px-3 py-2 text-center ${toneClass[state.tone]}`}
+              className={`rounded-[11px] border-[1.5px] px-2.5 py-[9px] text-center ${toneClass[state.tone]}`}
             >
               <div className="font-bold">{room.name}</div>
               <div className="text-xs text-sub">{room.roomTypeName}</div>
@@ -151,9 +164,10 @@ export default async function CleaningPage({
         })}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="admin-cleaning-tables grid gap-4 xl:grid-cols-2">
         <Card title="清掃予定・スポット清掃 期限表">
           <Table
+            minWidth={700}
             head={['部屋', '種別', '退室', '次の予約', '期限', '残り', '状態', '操作']}
             rows={board.tasks
               .filter((t) => t.status !== 'canceled')
@@ -264,7 +278,7 @@ export default async function CleaningPage({
       </div>
       <div className="mt-4">
         <Notice>
-          前日20時のバッチで翌日の清掃予定（開店前清掃・予約間のスポット清掃）を作成します（仮・CQ-68）。当日の割当変更で未清掃の部屋に移った場合は至急のスポット清掃が追加されます。
+          前日20時の割当時に翌日の清掃予定を作成します。当日の割当変更で未清掃の部屋に移った場合は至急のスポット清掃が追加されます。
         </Notice>
       </div>
     </>

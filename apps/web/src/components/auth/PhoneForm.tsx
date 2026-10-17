@@ -12,7 +12,7 @@ export function PhoneForm({ flow = 'booking', next }: { flow?: AuthFlow; next?: 
     <form action={action} className="space-y-3">
       <input type="hidden" name="flow" value={flow} />
       {next && <input type="hidden" name="next" value={next} />}
-      <label className="block rounded-xl border border-line bg-white p-4 text-sm">
+      <label className="block auth-card rounded-xl border border-line bg-white p-4 text-sm">
         <span className="font-bold">携帯電話番号</span>
         <input
           name="phone"

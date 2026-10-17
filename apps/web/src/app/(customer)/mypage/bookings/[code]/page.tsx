@@ -59,7 +59,7 @@ export default async function BookingDetailPage({
   return (
     <>
       <PageHeader backHref="/mypage" title="予約詳細" badge={<StatusBadge kind={badge} />} />
-      <main className="mx-auto max-w-md space-y-4 px-4 py-4">
+      <main className="customer-content ">
         <p className="text-xs text-sub">予約番号 {b.bookingCode}</p>
         {changed === '1' && <Notice tone="success">ご予約内容を変更しました</Notice>}
         {changed === 'refund_pending' && (
@@ -69,13 +69,15 @@ export default async function BookingDetailPage({
         )}
 
         {b.status !== 'canceled' && (
-          <Card className="text-center">
+          <Card className="room-guide text-center">
             <h2 className="text-left font-bold text-brand-dark">お部屋のご案内</h2>
             {room ? (
               <>
-                <p className="mt-3 text-5xl font-bold tabular-nums">{room.name}</p>
+                <p className="room-number mt-3 text-[48px] font-bold tabular-nums">{room.name}</p>
                 <p className="mt-2 text-sub">{b.roomGroupName}</p>
-                {b.roomGuide?.location && <p className="mt-2 text-sm">{b.roomGuide.location}</p>}
+                {b.roomGuide?.location && (
+                  <p className="mt-2 text-[12.5px] text-sub">{b.roomGuide.location}</p>
+                )}
                 {b.roomGuide?.photoUrl && (
                   // biome-ignore lint/performance/noImgElement: room-master URLs are not a fixed image-host allowlist
                   <img
@@ -90,14 +92,15 @@ export default async function BookingDetailPage({
               </>
             ) : (
               <p className="mt-3 text-sub">
-                {b.roomGroupName}・お部屋番号はご利用日の前日にお知らせします
+                {b.roomGroupName}
+                ・お部屋番号はご利用日の前日20時に確定します。通知時刻以降・当日のご予約は決済後にお知らせします
               </p>
             )}
           </Card>
         )}
 
         {view.upcoming && (
-          <Card className="bg-paper">
+          <Card className="entry-code-card bg-[#f3f2ee]">
             <h2 className="font-bold">店舗入口の入室コード</h2>
             {entry ? (
               <>
@@ -112,7 +115,7 @@ export default async function BookingDetailPage({
               <p className="mt-1 text-sub">
                 {view.entryDisclosed
                   ? '入室コードを準備しています。表示されない場合は店舗までお問い合わせください'
-                  : 'ご利用日の前日の通知以降に、この欄に表示されます'}
+                  : 'ご利用日の前日20時の通知以降に、この欄に表示されます。通知時刻以降・当日のご予約は決済後にご案内します'}
               </p>
             )}
             <p className="mt-2 text-xs text-sub">
@@ -147,6 +150,11 @@ export default async function BookingDetailPage({
               label={`${durationLabel(b.price.durationMinutes)}${b.price.packageDiscount > 0 ? ' パック料金' : ''}`}
               value={yen(b.price.subtotal)}
             />
+
+            <div className="flex justify-between border-t border-line pt-2 font-bold">
+              <dt>お支払い合計（税込）</dt>
+              <dd className="text-lg text-brand-dark">{yen(b.price.total)}</dd>
+            </div>
             {b.coupon && (
               <Row
                 label={`クーポン割引（${b.coupon.name}）`}
@@ -154,10 +162,6 @@ export default async function BookingDetailPage({
                 accent="alert"
               />
             )}
-            <div className="flex justify-between border-t border-line pt-2 font-bold">
-              <dt>お支払い合計（税込）</dt>
-              <dd className="text-lg text-brand-dark">{yen(b.price.total)}</dd>
-            </div>
             {b.payments.map((p) => (
               <Row
                 key={p.id}
@@ -190,7 +194,7 @@ export default async function BookingDetailPage({
         )}
 
         {view.upcoming && (b.store.entryGuideText || b.store.accessText) && (
-          <section className="rounded-xl border border-brand bg-brand-pale p-4 text-sm">
+          <section className="rounded-[14px] border border-brand bg-brand-pale p-3.5 text-sm">
             <h2 className="font-bold text-brand-dark">🚪 入室のご案内</h2>
             {b.store.entryGuideText && (
               <p className="mt-1 whitespace-pre-line">{b.store.entryGuideText}</p>

@@ -1,4 +1,4 @@
-import type { StoreRepository } from '@jancube/application'
+import type { ListedStore, StoreRepository } from '@jancube/application'
 import type { CalendarOverride, LocalDate, Store, StoreStatus, WeeklyHours } from '@jancube/domain'
 import type { Database } from './create-db'
 import { toLocalDate } from './sql-values'
@@ -23,14 +23,37 @@ const storeColumns = [
 export class KyselyStoreRepository implements StoreRepository {
   constructor(private readonly db: Database) {}
 
-  async listActive(): Promise<Store[]> {
+  async listActive(): Promise<ListedStore[]> {
     const rows = await this.db
       .selectFrom('stores')
       .select(storeColumns)
       .where('is_active', '=', 1)
       .orderBy('code')
       .execute()
-    return rows.map(toStore)
+    if (rows.length === 0) return []
+    // One hours query for the entire listing avoids an extra query per store as the estate grows.
+    const hours = await this.db
+      .selectFrom('store_business_hours')
+      .select(['store_id', 'weekday', 'opens_minute', 'closes_minute', 'is_closed'])
+      .where(
+        'store_id',
+        'in',
+        rows.map((row) => row.id),
+      )
+      .execute()
+    const byStore = new Map<number, WeeklyHours[]>()
+    for (const row of hours) {
+      const id = Number(row.store_id)
+      const weekly = byStore.get(id) ?? []
+      weekly.push({
+        weekday: row.weekday,
+        opensMinute: row.opens_minute,
+        closesMinute: row.closes_minute,
+        isClosed: row.is_closed === 1,
+      })
+      byStore.set(id, weekly)
+    }
+    return rows.map((row) => ({ ...toStore(row), regularHours: byStore.get(Number(row.id)) ?? [] }))
   }
 
   async findActiveByCode(code: string): Promise<Store | null> {

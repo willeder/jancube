@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import { ProfileForm } from '@/components/auth/ProfileForm'
+import { BookingFlow } from '@/components/BookingFlow'
 import { HoldCountdown } from '@/components/HoldCountdown'
-import { ErrorPanel, StoreBar } from '@/components/StoreBar'
+import { ErrorPanel } from '@/components/StoreBar'
 import { withContainer } from '@/server/container'
 import { isDomainError, toUserMessage } from '@/server/errors'
 import { readHoldKey } from '@/server/hold-cookie'
@@ -23,20 +24,17 @@ export default async function ProfilePage() {
   if (!challenge.canRegister) redirect('/booking/auth')
 
   return (
-    <>
-      <StoreBar storeName={hold.storeName} backHref="/booking/auth" />
-      <main className="mx-auto max-w-md space-y-4 px-4 py-5">
-        <div>
-          <h1 className="text-lg font-bold">お客様情報の入力</h1>
-          <p className="mt-1 text-sm text-sub">お名前（本名でのご登録をお願いしています）</p>
-        </div>
-        <ProfileForm />
-        <HoldCountdown
-          expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
-          storeCode={hold.storeCode}
-        />
-      </main>
-    </>
+    <BookingFlow step={5} storeName={hold.storeName} backHref="/booking/auth">
+      <div>
+        <h1 className="text-base font-bold">お客様情報の入力</h1>
+        <p className="text-sm text-sub">お名前（本名でのご登録をお願いしています）</p>
+      </div>
+      <ProfileForm />
+      <HoldCountdown
+        expiresAt={(hold.holdExpiresAt ?? new Date()).toISOString()}
+        storeCode={hold.storeCode}
+      />
+    </BookingFlow>
   )
 }
 

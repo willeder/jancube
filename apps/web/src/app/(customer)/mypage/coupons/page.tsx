@@ -31,8 +31,8 @@ export default async function CouponsPage({
   return (
     <>
       <PageHeader backHref="/mypage" title="クーポン" />
-      <main className="mx-auto max-w-md space-y-4 px-4 py-4">
-        <div className="grid grid-cols-2 gap-1 rounded-xl bg-line/50 p-1 text-sm">
+      <main className="customer-content ">
+        <div className="flex flex-wrap gap-2">
           <Tab href="/mypage/coupons" active={!showUsed} label={`利用可能 ${list.usable.length}`} />
           <Tab
             href="/mypage/coupons?tab=used"
@@ -41,7 +41,7 @@ export default async function CouponsPage({
           />
         </div>
         {coupons.length === 0 ? (
-          <p className="rounded-xl border border-line bg-white p-4 text-sm text-sub">
+          <p className="rounded-[14px] border border-line bg-white p-3.5 text-sm text-sub">
             {showUsed
               ? '利用済・失効したクーポンはありません'
               : 'ご利用いただけるクーポンはありません'}
@@ -65,7 +65,7 @@ function CouponCard({ coupon: c }: { coupon: MyCoupon }) {
   const usable = c.state === 'usable' || c.state === 'not_started'
   return (
     <li
-      className={`rounded-xl border bg-white p-4 text-sm ${usable ? 'border-brand' : 'border-line text-sub'}`}
+      className={`rounded-[14px] border bg-white p-3.5 text-[13px] ${usable ? 'border-2 border-brand' : 'border-line bg-[#f3f2ee] text-sub'}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -132,7 +132,8 @@ function Tab({ href, active, label }: { href: string; active: boolean; label: st
   return (
     <Link
       href={href}
-      className={`rounded-lg py-2 text-center font-bold ${active ? 'bg-white text-brand-dark shadow-sm' : 'text-sub'}`}
+      aria-current={active ? 'page' : undefined}
+      className={`rounded-xl border-[1.5px] px-3 py-[7px] text-center text-[13.5px] font-bold ${active ? 'border-brand bg-brand text-white' : 'border-line bg-white text-ink'}`}
     >
       {label}
     </Link>

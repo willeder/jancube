@@ -40,7 +40,7 @@ export function PaymentForm({
           return (
             <label
               key={c.grantId}
-              className={`block rounded-xl border-2 bg-white p-4 text-sm ${
+              className={`block rounded-[14px] border-2 bg-white p-3.5 text-sm ${
                 selected ? 'border-brand' : 'border-line'
               } ${usable ? '' : 'opacity-60'}`}
             >
@@ -86,7 +86,7 @@ export function PaymentForm({
 
       {codeForm}
 
-      <section className="rounded-xl border border-line bg-white p-4 text-sm">
+      <section className="booking-card text-sm">
         <dl className="space-y-1.5">
           <div className="flex justify-between">
             <dt className="text-sub">小計</dt>
@@ -94,7 +94,7 @@ export function PaymentForm({
           </div>
           <div className="flex items-baseline justify-between border-t border-line pt-2 font-bold">
             <dt>合計（税込）</dt>
-            <dd className="text-xl text-brand-dark">{yen(total)}</dd>
+            <dd className="text-[19px] text-brand-dark">{yen(total)}</dd>
           </div>
           {discount > 0 && (
             <div className="flex justify-between">
@@ -111,7 +111,7 @@ export function PaymentForm({
         {total > 0 && (
           <fieldset>
             <legend className="mb-2 font-bold">お支払い方法</legend>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <MethodButton active={method === 'card'} onClick={() => setMethod('card')}>
                 💳 クレジットカード
               </MethodButton>
@@ -147,7 +147,7 @@ function MethodButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`rounded-xl border px-4 py-2 text-sm font-bold ${
+      className={`rounded-xl border-[1.5px] px-3 py-[7px] text-[13.5px] font-bold ${
         active ? 'border-brand bg-brand text-white' : 'border-line bg-white'
       }`}
     >
@@ -159,8 +159,8 @@ function MethodButton({
 export function CouponCodeForm() {
   const [state, action, pending] = useActionState(claimCouponAction, { error: null })
   return (
-    <form action={action} className="rounded-xl border border-line bg-white p-4 text-sm">
-      <label className="font-bold" htmlFor="coupon-code">
+    <form action={action} className="booking-card text-sm">
+      <label className="text-[12.5px] font-bold text-sub" htmlFor="coupon-code">
         クーポンコードをお持ちの方
       </label>
       <div className="mt-2 flex gap-2">

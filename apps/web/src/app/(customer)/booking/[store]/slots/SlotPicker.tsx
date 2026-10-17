@@ -57,16 +57,32 @@ export function SlotPicker({ day }: { day: DayAvailability }) {
     minute < (end?.endMinuteOfDay ?? selection.startMinute + 30)
 
   return (
-    <div className="mt-3">
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2 text-[11px]" aria-live="polite">
+        <span
+          className={`rounded-full px-2 py-[3px] font-bold ${!selection ? 'bg-brand-pale text-brand-dark' : 'bg-line/50 text-sub'}`}
+        >
+          ① 開始を選択
+        </span>
+        <span className="text-sub">→</span>
+        <span
+          className={`rounded-full px-2 py-[3px] font-bold ${selection ? 'bg-brand-pale text-brand-dark' : 'bg-line/50 text-sub'}`}
+        >
+          ② 終了を選択
+        </span>
+      </div>
       <div className="overflow-x-auto rounded-xl border border-line bg-white">
-        <table className="border-collapse text-xs">
+        <table className="w-max min-w-full border-collapse text-[11px]">
           <thead>
             <tr>
-              <th className="sticky left-0 z-10 min-w-24 bg-white p-2 text-left text-sub">
+              <th className="sticky left-0 z-10 w-20 min-w-20 bg-[#f6f5f1] px-1.5 py-1 text-left text-sub">
                 部屋タイプ
               </th>
               {day.lanes[0]?.slots.map((s) => (
-                <th key={s.start} className="min-w-8 p-1 text-center font-normal text-sub">
+                <th
+                  key={s.start}
+                  className="min-w-6 bg-[#f6f5f1] px-0 py-1 text-center text-[9.5px] font-normal text-sub"
+                >
                   {s.minuteOfDay % 60 === 0 ? hhmm(s.minuteOfDay) : ''}
                 </th>
               ))}
@@ -75,7 +91,7 @@ export function SlotPicker({ day }: { day: DayAvailability }) {
           <tbody>
             {day.lanes.map((lane) => (
               <tr key={lane.key} className="border-t border-line">
-                <th className="sticky left-0 z-10 bg-white p-2 text-left align-top font-normal">
+                <th className="sticky left-0 z-10 w-20 min-w-20 max-w-20 bg-white px-1.5 py-1 text-left align-top font-normal">
                   <div className="font-bold">{lane.label}</div>
                   <div className="text-sub">
                     {lane.kind === 'group' ? `全${lane.roomCount}室 · ` : `${lane.groupName} · `}
@@ -83,18 +99,19 @@ export function SlotPicker({ day }: { day: DayAvailability }) {
                   </div>
                 </th>
                 {lane.slots.map((s) => (
-                  <td key={s.start} className="p-0.5 text-center">
+                  <td key={s.start} className="border border-line/50 p-0 text-center">
                     <button
                       type="button"
                       disabled={!s.available || pending}
                       onClick={() => onCell(lane, s)}
                       aria-label={`${lane.label} ${hhmm(s.minuteOfDay)}`}
-                      className={`h-8 w-7 rounded ${
+                      aria-pressed={Boolean(inRange(lane, s.minuteOfDay))}
+                      className={`h-[34px] w-6 ${
                         inRange(lane, s.minuteOfDay)
                           ? 'bg-brand text-white'
                           : s.available
                             ? 'text-brand hover:bg-brand-pale'
-                            : 'text-sub/40'
+                            : 'bg-line/20 text-sub/40'
                       }`}
                     >
                       {s.available ? '◯' : '✕'}
@@ -115,28 +132,30 @@ export function SlotPicker({ day }: { day: DayAvailability }) {
           <h2 className="text-sm font-bold">
             {selection.lane.label} / {hhmm(selection.startMinute)}開始 — 終了時刻を選ぶ
           </h2>
-          <div className="mt-2 grid grid-cols-2 gap-2">
+          <fieldset className="mt-2 flex min-w-0 gap-2 overflow-x-auto pb-2">
+            <legend className="sr-only">終了時刻と料金</legend>
             {ends.map((e) => (
               <button
                 key={e.end}
                 type="button"
                 onClick={() => setEnd(e)}
-                className={`rounded-lg border p-2 text-left text-xs ${
-                  end?.end === e.end ? 'border-brand bg-brand-pale' : 'border-line bg-white'
+                aria-pressed={end?.end === e.end}
+                className={`min-w-[92px] shrink-0 rounded-xl border-[1.5px] px-3 py-[7px] text-center text-[10.5px] ${
+                  end?.end === e.end ? 'border-brand bg-brand text-white' : 'border-line bg-white'
                 }`}
               >
-                <div className="font-bold">{hhmm(e.endMinuteOfDay)}まで</div>
+                <div className="text-[13.5px] font-bold">{hhmm(e.endMinuteOfDay)}</div>
                 <div>
                   {durationLabel(e.durationMinutes)} {yen(e.quote.price)}
                 </div>
                 {e.quote.discountAmount > 0 && (
-                  <div className="text-brand">
-                    −{yen(e.quote.discountAmount)}（{e.quote.discountRatePercent}%OFF）
+                  <div className={end?.end === e.end ? 'text-gold-pale' : 'text-alert'}>
+                    −{yen(e.quote.discountAmount)}
                   </div>
                 )}
               </button>
             ))}
-          </div>
+          </fieldset>
         </section>
       )}
 
@@ -157,7 +176,7 @@ function Summary({
   const { quote } = end
   const [state, holdAction, holding] = useActionState(createHoldAction, { error: null })
   return (
-    <section className="mt-4 rounded-xl border border-line bg-white p-4 text-sm">
+    <section className="booking-card mt-3 text-[13px]">
       <div className="text-sub">
         選択中: {selection.lane.label} / {dateLabel(day.date)}
       </div>
@@ -168,17 +187,14 @@ function Summary({
         />
         <Row label="時間数" value={durationLabel(end.durationMinutes)} />
         <Row label="通常料金" value={yen(quote.regularPrice)} />
-        {quote.discountAmount > 0 && (
-          <Row
-            label="割引"
-            value={`−${yen(quote.discountAmount)}（${quote.discountRatePercent}%OFF）`}
-            accent
-          />
-        )}
+
         <div className="flex justify-between border-t border-line pt-2 font-bold">
           <dt>お支払い合計（税込）</dt>
-          <dd className="text-lg text-brand-dark">{yen(quote.price)}</dd>
+          <dd className="text-[17px] text-brand-dark">{yen(quote.price)}</dd>
         </div>
+        {quote.discountAmount > 0 && (
+          <Row label="割引" value={`−${yen(quote.discountAmount)}`} accent />
+        )}
       </dl>
       <p className="mt-2 text-xs text-sub">クーポンはお支払い画面で適用できます</p>
       {state.error && (
@@ -190,11 +206,7 @@ function Summary({
         <input type="hidden" name="laneKey" value={selection.lane.key} />
         <input type="hidden" name="start" value={selection.start} />
         <input type="hidden" name="end" value={end.end} />
-        <button
-          type="submit"
-          disabled={holding}
-          className="mt-3 w-full rounded-xl bg-brand py-3 font-bold text-white disabled:opacity-60"
-        >
+        <button type="submit" disabled={holding} className="booking-primary mt-3">
           {holding ? 'お部屋を確保しています…' : 'この内容で進む'}
         </button>
       </form>
@@ -206,7 +218,7 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
   return (
     <div className="flex justify-between">
       <dt className="text-sub">{label}</dt>
-      <dd className={accent ? 'text-brand' : ''}>{value}</dd>
+      <dd className={accent ? 'text-alert' : ''}>{value}</dd>
     </div>
   )
 }

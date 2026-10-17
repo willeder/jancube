@@ -2,7 +2,7 @@ import type { Dashboard } from '@jancube/application'
 import { can } from '@jancube/domain'
 import Link from 'next/link'
 import { BOOKING_SOURCE, bookingTimes, StatusBadge } from '@/components/admin/booking-format'
-import { Card, Notice, PageHeader, Stat, Table, TextLink } from '@/components/admin/ui'
+import { Notice, PageHeader, Stat, Table, TextLink } from '@/components/admin/ui'
 import { dateLabel, yen } from '@/lib/format'
 import { requireStaff, selectedStoreId } from '@/server/admin-session'
 import { withContainer } from '@/server/container'
@@ -54,7 +54,7 @@ export default async function DashboardPage({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="dashboard-stats flex flex-wrap gap-3">
         <Stat value={yen(data.monthSales)} label={`${data.monthLabel}の予約売上`} />
         <Stat
           value={data.utilizationPercent === null ? '—' : `${data.utilizationPercent}%`}
@@ -67,7 +67,7 @@ export default async function DashboardPage({
 
       <div className="mt-3">
         <Notice>
-          【課題#25 未決】必須指標・集計条件・表示範囲は確認中です。現在の定義:
+          集計指標・表示範囲は調整中です。現在の集計定義：
           売上＝確定・利用済の予約金額（利用日基準・当月）/ 稼働率＝予約時間 ÷（稼働中の部屋数 ×
           営業時間）/ 未割当＝本日以降の確定済みグループ予約で部屋が決まっていないもの
         </Notice>
@@ -92,26 +92,29 @@ export default async function DashboardPage({
         </div>
       )}
 
-      <Card title="日別売上(直近14日)" className="mt-4">
-        <div className="flex h-40 items-end gap-2 overflow-x-auto">
-          {data.daily.map((d) => (
-            <div key={d.date} className="flex min-w-9 flex-1 flex-col items-center gap-1">
-              <span className="text-[10px] text-sub">{d.count}</span>
-              <div
-                className="w-full rounded-t bg-brand"
-                style={{ height: `${Math.max(2, Math.round((d.amount / max) * 100))}px` }}
-                title={`${d.date} ${yen(d.amount)} / ${d.count}件`}
-              />
-              <span className="text-[10px] text-sub">
-                {Number(d.date.slice(5, 7))}/{Number(d.date.slice(8))}
-              </span>
-            </div>
-          ))}
+      <section className="dashboard-chart mt-3">
+        <h2 className="mb-2 text-sm font-bold">日別売上(直近14日)</h2>
+        <div className="rounded-xl border border-line bg-white px-3.5 py-3">
+          <div className="flex min-h-[118px] items-end gap-2 overflow-x-auto">
+            {data.daily.map((d) => (
+              <div key={d.date} className="flex w-6 shrink-0 flex-col items-center gap-[3px]">
+                <span className="text-[9.5px] text-sub">{d.count}</span>
+                <div
+                  className="w-6 rounded-[4px] bg-brand"
+                  style={{ height: `${Math.max(2, Math.round((d.amount / max) * 80))}px` }}
+                  title={`${d.date} ${yen(d.amount)} / ${d.count}件`}
+                />
+                <span className="whitespace-nowrap text-[9.5px] text-sub">
+                  {Number(d.date.slice(5, 7))}/{Number(d.date.slice(8))}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-sub">棒の高さ＝売上金額、上の数字＝予約件数</p>
         </div>
-        <p className="mt-2 text-xs text-sub">棒の高さ＝売上金額、上の数字＝予約件数</p>
-      </Card>
+      </section>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-3 grid gap-4 lg:grid-cols-2">
         <section>
           <h2 className="mb-2 font-bold">本日の予約</h2>
           <Table

@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 export default function LiffEntryPage() {
   const config = runtimeConfig()
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-6">
+    <main className="customer-content ">
       <LiffEntry
         liffId={config.line.liffId}
         devStandIn={config.isDevelopment && !config.line.loginChannelId}

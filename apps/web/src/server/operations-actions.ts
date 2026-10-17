@@ -167,6 +167,10 @@ export async function roomMemoAction(_prev: FormState, form: FormData): Promise<
   } catch (error) {
     return { error: toUserMessage(error) }
   }
+  if (fromCleaning && form.get('back') === 'memo') {
+    // A fixed destination preserves the cleaning scope without accepting a caller-supplied URL.
+    redirect(`/cleaning/memo?room=${id(form, 'roomId')}&saved=1`)
+  }
   redirect(
     fromCleaning
       ? '/cleaning?memo=1'

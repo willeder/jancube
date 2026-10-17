@@ -75,10 +75,14 @@ export async function confirmHoldAction(_prev: FormState, form: FormData): Promi
   redirect(next)
 }
 
-/** C-04 「日時を変更する」: free the hold and go back to the grid. */
+/** C-04 edits release the hold before returning to the chosen selection step. */
 export async function changeSelectionAction(form: FormData): Promise<void> {
   const key = await readHoldKey()
   if (key) await withContainer((c) => c.releaseHold(key))
   await clearHoldKey()
-  redirect(`/booking/${String(form.get('storeCode'))}/slots?date=${String(form.get('date'))}`)
+  // Only known local destinations are accepted; a submitted URL cannot control the redirect.
+  const store = encodeURIComponent(String(form.get('storeCode')))
+  if (form.get('target') === 'store') redirect('/')
+  if (form.get('target') === 'date') redirect(`/booking/${store}/date`)
+  redirect(`/booking/${store}/slots?date=${encodeURIComponent(String(form.get('date')))}`)
 }

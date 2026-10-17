@@ -14,7 +14,7 @@ export function ProfileForm({ flow = 'booking', next }: { flow?: AuthFlow; next?
     <form action={action} className="space-y-3">
       <input type="hidden" name="flow" value={flow} />
       {next && <input type="hidden" name="next" value={next} />}
-      <div className="space-y-3 rounded-xl border border-line bg-white p-4 text-sm">
+      <div className="space-y-3 auth-card rounded-xl border border-line bg-white p-4 text-sm">
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="font-bold">姓</span>
@@ -54,7 +54,7 @@ export function ProfileForm({ flow = 'booking', next }: { flow?: AuthFlow; next?
         </label>
       </div>
 
-      <div className="space-y-2.5 rounded-xl border border-line bg-white p-4 text-sm">
+      <div className="space-y-2.5 auth-card rounded-xl border border-line bg-white p-4 text-sm">
         <label className="flex items-center gap-2.5">
           <input name="agreesToTerms" type="checkbox" required className="size-5 accent-brand" />
           <span>

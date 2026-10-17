@@ -9,10 +9,19 @@ export function FormError({ message }: { message: string | null }) {
   )
 }
 
-export function SubmitButton({ pending, children }: { pending: boolean; children: ReactNode }) {
+export function SubmitButton({
+  pending,
+  children,
+  form,
+}: {
+  pending: boolean
+  children: ReactNode
+  form?: string
+}) {
   return (
     <button
       type="submit"
+      form={form}
       disabled={pending}
       className="w-full rounded-xl bg-brand py-3 font-bold text-white disabled:opacity-60"
     >

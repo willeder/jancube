@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 
 const roleOptions = ROLES.map((r) => [r, ROLE_LABELS[r]] as const)
 
-/** A-23 スタッフ・ロール管理 (owners only). */
+/** A-23 スタッフ・ロール管理. Server-side rules restrict who may manage each role. */
 export default async function StaffPage({
   searchParams,
 }: {
@@ -98,8 +98,7 @@ export default async function StaffPage({
             ])}
           />
           <p className="mt-2 text-xs text-sub">
-            ロール区分は課題#29（5区分案）/ CQ-83（経理）/ CQ-44
-            で確認中。現在は4ロールで運用します。
+            オーナー・管理者・清掃の3ロールで運用します。管理者アカウントはオーナーが管理し、管理者は清掃担当を管理できます。担当店舗の制限は各操作でも適用されます。
           </p>
         </Card>
       </div>
