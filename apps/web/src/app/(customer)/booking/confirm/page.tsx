@@ -1,7 +1,8 @@
 import type { BookingSummary } from '@jancube/application'
 import { minuteOfBusinessDay } from '@jancube/domain'
+import { BookingFlow } from '@/components/BookingFlow'
 import { HoldCountdown } from '@/components/HoldCountdown'
-import { ErrorPanel, StoreBar } from '@/components/StoreBar'
+import { ErrorPanel } from '@/components/StoreBar'
 import { dateLabel, durationLabel, hhmm, yen } from '@/lib/format'
 import { withContainer } from '@/server/container'
 import { toUserMessage } from '@/server/errors'
@@ -25,46 +26,58 @@ export default async function ConfirmPage() {
   const discount = hold.regularPrice - hold.subtotal
 
   return (
-    <>
-      <StoreBar
-        storeName={hold.storeName}
-        backHref={`/booking/${hold.storeCode}/slots?date=${hold.businessDate}`}
-      />
-      <main className="mx-auto max-w-md space-y-4 px-4 py-5">
-        <div>
-          <h1 className="text-lg font-bold">ご予約内容の確認</h1>
-          <p className="mt-1 text-sm text-sub">
-            内容をご確認のうえ、お客様情報の入力へお進みください
-          </p>
-        </div>
+    <BookingFlow
+      step={4}
+      storeName={hold.storeName}
+      backHref={`/booking/${hold.storeCode}/slots?date=${hold.businessDate}`}
+    >
+      <div>
+        <h1 className="text-base font-bold">予約内容の確認</h1>
+        <p className="text-sm text-sub">各項目の「変更」から日時・お部屋を修正できます</p>
+      </div>
 
-        <section className="rounded-xl border border-line bg-white p-4 text-sm">
-          <div className="mb-2 font-bold">
-            {hold.storeCode} {hold.storeName}
-          </div>
-          <dl className="space-y-1.5">
-            <Row label="日付" value={dateLabel(hold.businessDate)} />
-            <Row
-              label="お部屋"
-              value={
-                hold.requestedRoomName
-                  ? `${hold.roomGroupName} / ${hold.requestedRoomName}`
-                  : `${hold.roomGroupName}（お部屋番号はご利用前日にお知らせします）`
-              }
-            />
-            <Row label="開始" value={hhmm(start)} />
-            <Row label="終了" value={`${hhmm(end)}（${durationLabel(end - start)}）`} />
-          </dl>
-        </section>
+      <section className="booking-card text-sm">
+        <dl className="divide-y divide-line">
+          {[
+            ['店舗', `${hold.storeCode} ${hold.storeName}`],
+            ['日付', dateLabel(hold.businessDate)],
+            [
+              '部屋タイプ',
+              hold.requestedRoomName
+                ? `${hold.roomGroupName} / ${hold.requestedRoomName}`
+                : `${hold.roomGroupName}（部屋番号は前日20時に確定。当日予約は決済後にお知らせ）`,
+            ],
+            ['開始', hhmm(start)],
+            ['終了', `${hhmm(end)}（${durationLabel(end - start)}）`],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0"
+            >
+              <div className="min-w-0">
+                <dt className="text-[11px] text-sub">{label}</dt>
+                <dd className="mt-0.5 text-[13px] font-bold">{value}</dd>
+              </div>
+              <ChangeSelectionButton
+                storeCode={hold.storeCode}
+                date={hold.businessDate}
+                compact
+                target={label === '店舗' ? 'store' : label === '日付' ? 'date' : 'slots'}
+              />
+            </div>
+          ))}
+        </dl>
+      </section>
 
-        <section className="rounded-xl border border-line bg-white p-4 text-sm">
+      <ConfirmForm capacity={hold.capacity} guestCount={hold.guestCount}>
+        <section className="booking-card text-sm">
           <dl className="space-y-1.5">
             <Row label="通常料金" value={yen(hold.regularPrice)} />
-            {discount > 0 && <Row label="パック割引" value={`−${yen(discount)}`} accent />}
             <div className="flex justify-between border-t border-line pt-2 font-bold">
               <dt>税込合計</dt>
               <dd className="text-lg text-brand-dark">{yen(hold.subtotal)}</dd>
             </div>
+            {discount > 0 && <Row label="パック割引" value={`−${yen(discount)}`} accent />}
           </dl>
           <p className="mt-2 text-xs text-sub">
             初回クーポン等の割引は、認証後のお支払い画面で適用されます
@@ -80,11 +93,8 @@ export default async function ConfirmPage() {
           キャンセル: 24時間前まで無料 / 24時間以内50% /
           開始以降100%。キャンセル料が発生する期間は日程変更もできません
         </p>
-
-        <ConfirmForm capacity={hold.capacity} guestCount={hold.guestCount} />
-        <ChangeSelectionButton storeCode={hold.storeCode} date={hold.businessDate} />
-      </main>
-    </>
+      </ConfirmForm>
+    </BookingFlow>
   )
 }
 
@@ -92,7 +102,7 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
   return (
     <div className="flex justify-between gap-4">
       <dt className="shrink-0 text-sub">{label}</dt>
-      <dd className={`text-right ${accent ? 'text-brand' : ''}`}>{value}</dd>
+      <dd className={`text-right ${accent ? 'text-alert' : ''}`}>{value}</dd>
     </div>
   )
 }

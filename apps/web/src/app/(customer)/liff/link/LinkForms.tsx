@@ -18,7 +18,7 @@ export function LinkPhoneForm() {
   const [state, action, pending] = useActionState(liffSendCodeAction, { error: null })
   return (
     <form action={action} className="space-y-3">
-      <label className="block rounded-xl border border-line bg-white p-4 text-sm">
+      <label className="block rounded-[14px] border border-line bg-white p-3.5 text-sm">
         <span className="font-bold">携帯電話番号</span>
         <input
           name="phone"
@@ -58,7 +58,7 @@ export function LinkVerifyForm({ resendAfter }: { resendAfter: string }) {
   return (
     <div className="space-y-3">
       <form action={action} className="space-y-3">
-        <label className="block rounded-xl border border-line bg-white p-4 text-sm">
+        <label className="block rounded-[14px] border border-line bg-white p-3.5 text-sm">
           <span className="font-bold">6桁の認証コード</span>
           <input
             name="code"
@@ -97,7 +97,7 @@ export function LinkProfileForm({ phoneFree = false }: { phoneFree?: boolean }) 
   )
   return (
     <form action={action} className="space-y-3">
-      <div className="space-y-3 rounded-xl border border-line bg-white p-4 text-sm">
+      <div className="space-y-3 rounded-[14px] border border-line bg-white p-3.5 text-sm">
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="font-bold">姓</span>
@@ -135,7 +135,7 @@ export function LinkProfileForm({ phoneFree = false }: { phoneFree?: boolean }) 
           />
         </label>
       </div>
-      <div className="space-y-2.5 rounded-xl border border-line bg-white p-4 text-sm">
+      <div className="space-y-2.5 rounded-[14px] border border-line bg-white p-3.5 text-sm">
         <label className="flex items-center gap-2.5">
           <input name="agreesToTerms" type="checkbox" required className="size-5 accent-brand" />
           利用規約・プライバシーポリシーに同意する

@@ -47,7 +47,7 @@ export default async function ReceiptPage({
   return (
     <>
       <PageHeader backHref={back} title="領収書" />
-      <main className="mx-auto max-w-md space-y-4 px-4 py-4">
+      <main className="customer-content ">
         <p className="rounded-lg bg-gold-pale p-3 text-xs print:hidden">
           🧾
           通常のご利用は「ご利用後」に、キャンセル料が発生した場合は「キャンセル確定後」に発行できます
@@ -75,7 +75,7 @@ export default async function ReceiptPage({
               )}
             </div>
             <p className="mt-1 text-xs text-sub">No. {receipt.receiptNumber}</p>
-            <p className="mt-4 border-b border-ink pb-1 text-lg font-bold">
+            <p className="mt-4 border-b border-ink pb-1 text-base font-bold">
               {receipt.recipientName} 様
             </p>
             <p className="mt-4 text-center text-2xl font-bold tabular-nums">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useEffect, useId, useState } from 'react'
 import { FormError, SubmitButton } from '@/components/FormParts'
 import type { AuthFlow } from '@/lib/auth-flow'
 import { resendCodeAction, verifyCodeAction } from '@/server/auth-actions'
@@ -20,15 +20,17 @@ export function VerifyForm({
   const [resendState, resend, resending] = useActionState(resendCodeAction, { error: null })
   const [code, setCode] = useState('')
   const wait = useSecondsUntil(resendAfter)
+  const formId = useId()
 
   return (
     <div className="space-y-3">
-      <form action={action} className="space-y-3">
-        <input type="hidden" name="flow" value={flow} />
-        {next && <input type="hidden" name="next" value={next} />}
-        <div className="rounded-xl border border-line bg-white p-4">
+      <div className="auth-card rounded-xl border border-line bg-white p-4">
+        <form id={formId} action={action}>
+          <input type="hidden" name="flow" value={flow} />
+          {next && <input type="hidden" name="next" value={next} />}
+
           {/* One real input (SMS autofill, paste, screen readers); the boxes only display it. */}
-          <label className="group relative mx-auto block w-fit">
+          <label className="group relative mx-auto block w-full max-w-[318px]">
             <span className="sr-only">6桁の認証コード</span>
             <input
               name="code"
@@ -43,12 +45,12 @@ export function VerifyForm({
               autoFocus
               className="absolute inset-0 h-full w-full opacity-0"
             />
-            <span aria-hidden className="flex gap-2">
+            <span aria-hidden className="grid grid-cols-6 gap-2">
               {Array.from({ length: DIGITS }, (_, i) => (
                 <span
                   // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length display
                   key={i}
-                  className={`flex h-14 w-11 items-center justify-center rounded-lg border-2 text-2xl font-bold tabular-nums ${
+                  className={`flex h-14 min-w-0 items-center justify-center rounded-lg border-2 text-2xl font-bold tabular-nums ${
                     i < code.length
                       ? 'border-brand'
                       : i === code.length
@@ -56,28 +58,30 @@ export function VerifyForm({
                         : 'border-line'
                   }`}
                 >
-                  {code[i] ?? ''}
+                  {code[i] ? '●' : ''}
                 </span>
               ))}
             </span>
           </label>
-        </div>
-        <FormError message={state.error} />
-        <SubmitButton pending={pending || code.length < DIGITS}>認証する</SubmitButton>
-      </form>
+        </form>
 
-      <form action={resend} className="text-center">
-        <input type="hidden" name="flow" value={flow} />
-        {next && <input type="hidden" name="next" value={next} />}
-        <button
-          type="submit"
-          disabled={wait > 0 || resending}
-          className="text-sm font-bold text-brand-dark underline disabled:text-sub disabled:no-underline"
-        >
-          {wait > 0 ? `コードを再送する（残り${mmss(wait)}）` : 'コードを再送する'}
-        </button>
-        <FormError message={resendState.error} />
-      </form>
+        <form action={resend} className="mt-1.5 text-center">
+          <input type="hidden" name="flow" value={flow} />
+          {next && <input type="hidden" name="next" value={next} />}
+          <button
+            type="submit"
+            disabled={wait > 0 || resending}
+            className="text-sm font-bold text-brand-dark underline disabled:text-sub disabled:no-underline"
+          >
+            {wait > 0 ? `コードを再送する（残り${mmss(wait)}）` : 'コードを再送する'}
+          </button>
+          <FormError message={resendState.error} />
+        </form>
+      </div>
+      <FormError message={state.error} />
+      <SubmitButton form={formId} pending={pending || code.length < DIGITS}>
+        認証する
+      </SubmitButton>
     </div>
   )
 }

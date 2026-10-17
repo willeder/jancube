@@ -1,8 +1,9 @@
 import type { DayAvailability } from '@jancube/application'
 import Link from 'next/link'
+import { BookingFlow } from '@/components/BookingFlow'
 import { FunnelBeacon } from '@/components/FunnelBeacon'
-import { ErrorPanel, StoreBar } from '@/components/StoreBar'
-import { dateLabel } from '@/lib/format'
+import { ErrorPanel } from '@/components/StoreBar'
+import { WEEKDAYS, weekdayIndex } from '@/lib/format'
 import { withContainer } from '@/server/container'
 import { toUserMessage } from '@/server/errors'
 import { SlotPicker } from './SlotPicker'
@@ -31,7 +32,7 @@ export default async function SlotsPage({
         c.getBookingCalendar(store),
       ])
       const i = calendar.days.findIndex((d) => d.date === date)
-      const around = calendar.days.slice(Math.max(0, i - 2), Math.max(0, i - 2) + 7)
+      const around = calendar.days.slice(Math.max(0, i - 2), Math.max(0, i - 2) + 5)
       return [
         availability,
         around.map((d) => ({
@@ -45,36 +46,35 @@ export default async function SlotsPage({
   }
 
   return (
-    <>
-      <StoreBar storeName={day.store.name} backHref={back} />
-      <main className="mx-auto max-w-md px-4 py-5">
-        <FunnelBeacon step="slots_viewed" store={store} />
-        <div className="flex gap-1.5 overflow-x-auto pb-2">
-          {nearby.map((d) =>
-            d.bookable ? (
-              <Link
-                key={d.date}
-                href={`/booking/${store}/slots?date=${d.date}`}
-                className={`shrink-0 rounded-full border px-3 py-1 text-xs ${
-                  d.date === date ? 'border-brand bg-brand text-white' : 'border-line bg-white'
-                }`}
-              >
-                {dateLabel(d.date)}
-              </Link>
-            ) : (
-              <span
-                key={d.date}
-                className="shrink-0 rounded-full bg-line/40 px-3 py-1 text-xs text-sub/60"
-              >
-                {dateLabel(d.date)}
-              </span>
-            ),
-          )}
-        </div>
-        <h1 className="mt-3 text-lg font-bold">時間を選ぶ</h1>
-        <p className="mt-1 text-sm text-sub">① 開始の◯をタップ → ② 終了の◯をタップ（30分単位）</p>
-        <SlotPicker day={day} />
-      </main>
-    </>
+    <BookingFlow step={3} storeName={day.store.name} backHref={back}>
+      <FunnelBeacon step="slots_viewed" store={store} />
+      <div className="flex flex-wrap gap-2">
+        {nearby.map((d) =>
+          d.bookable ? (
+            <Link
+              key={d.date}
+              href={`/booking/${store}/slots?date=${d.date}`}
+              className={`shrink-0 rounded-xl border-[1.5px] px-3 py-[7px] text-[13.5px] font-bold ${
+                d.date === date ? 'border-brand bg-brand text-white' : 'border-line bg-white'
+              }`}
+            >
+              {Number(d.date.slice(5, 7))}/{Number(d.date.slice(8))}{' '}
+              {WEEKDAYS[weekdayIndex(d.date)]}
+            </Link>
+          ) : (
+            <span
+              key={d.date}
+              className="shrink-0 rounded-xl bg-line/40 px-3 py-[7px] text-[13.5px] text-sub/60"
+            >
+              {Number(d.date.slice(5, 7))}/{Number(d.date.slice(8))}{' '}
+              {WEEKDAYS[weekdayIndex(d.date)]}
+            </span>
+          ),
+        )}
+      </div>
+      <h1 className="text-base font-bold">時間を選ぶ</h1>
+      <p className="text-sm text-sub">① 開始の◯をタップ → ② 終了の◯をタップ（30分単位）</p>
+      <SlotPicker day={day} />
+    </BookingFlow>
   )
 }

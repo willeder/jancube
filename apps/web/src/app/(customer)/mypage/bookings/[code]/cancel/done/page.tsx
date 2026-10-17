@@ -29,9 +29,9 @@ export default async function CancelDonePage({ params }: { params: Promise<{ cod
   const failed = b.refunds.some((r) => r.status === 'failed')
 
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-5">
-      <section className="rounded-xl border border-brand bg-brand-pale p-4">
-        <h1 className="text-lg font-bold">ご予約をキャンセルしました</h1>
+    <main className="customer-content ">
+      <section className="rounded-[14px] border border-brand bg-brand-pale p-3.5">
+        <h1 className="text-base font-bold">ご予約をキャンセルしました</h1>
         <p className="mt-1 text-sm text-sub">予約番号 {b.bookingCode}</p>
       </section>
       <Card>

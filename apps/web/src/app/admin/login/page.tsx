@@ -14,8 +14,8 @@ export default async function AdminLoginPage({
   if (await currentStaff()) redirect('/admin')
   const { password } = await searchParams
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-4 rounded-xl border border-line bg-white p-6">
+    <main className="admin-auth-page flex min-h-screen items-center justify-center px-4 py-6">
+      <div className="w-full max-w-[420px] space-y-3 rounded-[14px] border border-line bg-white p-3.5">
         <div className="text-center">
           <h1 className="font-bold text-brand-dark">🀄 雀CUBE 予約システム 管理画面</h1>
           <p className="mt-1 text-xs text-sub">運営スタッフ専用</p>

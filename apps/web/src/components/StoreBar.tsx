@@ -16,9 +16,17 @@ export function StoreBar({ storeName, backHref }: { storeName: string; backHref:
 
 export function ErrorPanel({ message, backHref }: { message: string; backHref: string }) {
   return (
-    <main className="mx-auto max-w-md px-4 py-10 text-center">
-      <p className="rounded-xl bg-alert-pale p-4 text-alert">{message}</p>
-      <Link href={backHref} className="mt-6 inline-block font-bold text-brand-dark">
+    <main className="customer-content text-center">
+      <p
+        role="alert"
+        className="rounded-[14px] border border-alert/30 bg-alert-pale p-3.5 text-alert"
+      >
+        {message}
+      </p>
+      <Link
+        href={backHref}
+        className="inline-block rounded-xl border-[1.5px] border-brand bg-white px-3 py-[13px] text-[15px] font-bold text-brand-dark"
+      >
         ‹ 戻る
       </Link>
     </main>

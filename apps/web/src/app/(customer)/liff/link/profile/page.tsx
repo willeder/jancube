@@ -22,9 +22,9 @@ export default async function LiffLinkProfilePage() {
   if (!canRegister) redirect('/liff/link')
 
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-6">
+    <main className="customer-content ">
       <div>
-        <h1 className="text-lg font-bold">お名前のご登録</h1>
+        <h1 className="text-base font-bold">お名前のご登録</h1>
         <p className="mt-1 text-sm text-sub">
           はじめてのご利用です。ご登録後、LINEアカウントと連携します
         </p>

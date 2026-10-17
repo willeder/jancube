@@ -40,13 +40,8 @@ export default async function ChangePage({
 
   return (
     <>
-      <PageHeader backHref={back} title="予約の変更" />
-      <div className="mx-auto max-w-md px-4 pt-3">
-        <div className="rounded-xl bg-brand-dark py-3 text-center font-bold text-white">
-          📍 {b.store.name}
-        </div>
-      </div>
-      <main className="mx-auto max-w-md space-y-4 px-4 py-4">
+      <PageHeader backHref={back} title="予約の変更" storeName={b.store.name} />
+      <main className="customer-content ">
         <p className="text-sm text-sub">日時・時間・お部屋を選び直します（同じ店舗内）</p>
         <Notice tone="warn">
           ⚠

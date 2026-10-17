@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CustomerShell } from '@/components/CustomerShell'
 import { StatusScreen } from '@/components/StatusScreen'
 import { maintenanceStatus } from '@/server/maintenance'
 
@@ -6,9 +7,9 @@ import { maintenanceStatus } from '@/server/maintenance'
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const maintenance = maintenanceStatus()
   return (
-    <>
+    <CustomerShell>
       <header className="bg-brand text-white print:hidden">
-        <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
+        <div className="customer-header mx-auto flex max-w-md items-center justify-between px-4 py-3">
           <Link href="/" className="font-bold">
             🀄 雀CUBE 予約
           </Link>
@@ -18,7 +19,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             <Link
               href="/mypage"
               aria-label="マイページ"
-              className="flex size-8 items-center justify-center rounded-full bg-white/15"
+              className="customer-account flex size-8 items-center justify-center rounded-full bg-white/15"
             >
               👤
             </Link>
@@ -34,6 +35,6 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
       ) : (
         children
       )}
-    </>
+    </CustomerShell>
   )
 }

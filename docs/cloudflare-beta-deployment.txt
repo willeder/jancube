@@ -1,0 +1,72 @@
+Jancube Cloudflare beta deployment — 17 October 2026
+
+Account: Dev@rokad.co's Account (2237a997c55be463e38cb352e6a6b0ee)
+Application source: main merge ad15626, plus the local setup-mode deployment gate/configuration.
+Web Worker: jancube-web-beta
+URL: https://jancube-web-beta.rokad.workers.dev
+Jobs Worker: jancube-jobs-beta (no public route, no active cron schedules)
+
+Current intended state: setup mode. The full OpenNext application is packaged, but requests return
+a bilingual preparation page (HTTP 503); /healthz reports ready:false. Admin routes, writes,
+payments and LINE webhooks are also gated. No placeholder credential is sent to a provider.
+The gate is enabled until BETA_SETUP_MODE=0 AND the HYPERDRIVE binding exists. This is not a
+functional reservation beta until the real database and integrations pass acceptance.
+
+Environment
+- APP_ENV=staging; public APP_URL is the URL above.
+- BETA_SETUP_MODE=1, MAINTENANCE_MODE=1.
+- AUTH_PEPPER, SESSION_SECRET and DATA_ENCRYPTION_KEY are cryptographically generated real secrets.
+  The encryption key is shared by web/jobs. Keep these stable; backing up the key is necessary to
+  decrypt persisted entry codes and notification destinations.
+- Stripe, Resend, LINE, SMSLINK and SmartRooming credentials are clearly marked random placeholders.
+- Sender is no-reply@jancube.invalid; provider URL placeholders use reserved .invalid domains.
+- No fabricated Hyperdrive resource or alternate database was created. Cloudflare has no Jancube
+  TiDB origin yet; the database is an infrastructure binding, not a random text environment value.
+- Secret JSON backups are local ignored .env.beta-web.secrets.json / .env.beta-jobs.secrets.json.
+  They are never committed. No values are included in this handover.
+
+Replace values through Cloudflare dashboard → Workers & Pages → the named beta Worker →
+Settings → Variables and Secrets. All generated credential values are secret bindings.
+Update web and jobs consistently. Do not replace the generated security keys merely because the
+external API placeholders are being replaced.
+
+Activation order
+1. Provision the agreed TiDB database and least-privilege users; enable CHECK enforcement, verify
+   pessimistic transaction mode, apply migrations and approved masters/legal/staff/template data.
+   Never seed dummy development staff into the deployed database.
+2. Create a Hyperdrive configuration for that actual TiDB origin with query caching disabled for
+   reservation freshness. Bind it as HYPERDRIVE to both Workers and record the ID in both beta
+   Wrangler configs so a subsequent deployment preserves it. Use the agreed TLS connection.
+3. Replace provider placeholders, EMAIL_FROM and the LINE/LIFF channel values. Register the real
+   Stripe and LINE callback URLs under the public beta origin. Verify sender/domain and methods.
+4. Set BETA_SETUP_MODE=0 in both beta configs and MAINTENANCE_MODE=0 in web after setup checks.
+   Deploy the matching web/jobs versions. Keep jobs paused until provider and database checks pass.
+5. Enable the agreed jobs crons (* * * * * and 0 11 * * *) and run client/staging acceptance.
+   Do not enable production/customer payments merely because the preparation URL responds.
+
+Repeat deployment
+Build with OpenNext in Linux (scripts/deploy-beta-linux.sh); native Windows packaging needs symlink
+privileges. The repository is mounted read-only and copied without .env/.dev.vars files into the
+build workspace. Deployment credentials are provided only to Wrangler after building.
+Only first-time initialization uses JANCUBE_UPLOAD_SECRETS=1 on the build container. Subsequent
+deployments omit this flag to preserve the dashboard's secrets.
+Update the non-secret beta configs to match the dashboard before subsequent deployments.
+
+Local validation: pnpm check passed (306 tests / 45 files, types, lint, dependency boundaries).
+Verified deployment
+- Web version: 5447df7e-498b-432b-b828-c2f17f5f7f3d
+- Jobs version: ff25e176-e111-4fec-9a2b-2f21c3b36d65
+- Cloudflare API confirms 16 web secrets, 11 jobs secrets, staging variables and empty schedules.
+- Web workers.dev is enabled; jobs public access and preview URLs are disabled.
+- Live GET / and /admin/login return the setup page (503, no-store).
+- Live GET /healthz returns setup_required and ready:false (503, no-store).
+- Test POSTs to the Stripe and LINE webhook routes return setup-required (503); no provider calls.
+- The local runner exited with a shell parsing error after both successful uploads while its source
+  file was being updated. The deployed versions above were independently verified through the API;
+  the saved deployment script passes bash -n. No further deployment was necessary.
+
+Deployment wrapper/configuration and this handover are versioned alongside the application.
+Pushing source changes does not redeploy the Workers; the live versions above remain unchanged
+until the next explicit deployment.
+The temporary copied CLI authentication file has been removed after verification; provider/security
+secret backups remain in ignored local files for recovery. No secret values were printed or committed.

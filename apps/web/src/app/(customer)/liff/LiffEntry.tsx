@@ -89,7 +89,7 @@ export function LiffEntry({ liffId, devStandIn }: { liffId: string | null; devSt
   return (
     <div className="space-y-4">
       <div className="text-center">
-        <h1 className="text-lg font-bold">LINEで予約</h1>
+        <h1 className="text-base font-bold">LINEで予約</h1>
         <p className="mt-1 text-sm text-sub">
           {state.kind === 'loading'
             ? 'LINEアカウントを確認しています…'
@@ -145,12 +145,12 @@ function DevSignIn() {
   return (
     <form onSubmit={submit} className="space-y-3">
       <div>
-        <h1 className="text-lg font-bold">LINEで予約（開発用）</h1>
+        <h1 className="text-base font-bold">LINEで予約（開発用）</h1>
         <p className="mt-1 text-sm text-sub">
           LINEチャネル未設定のため、LINEユーザーIDを入力してLIFFからの起動を再現します
         </p>
       </div>
-      <label className="block rounded-xl border border-line bg-white p-4 text-sm">
+      <label className="block rounded-[14px] border border-line bg-white p-3.5 text-sm">
         <span className="font-bold">LINEユーザーID</span>
         <input
           value={userId}

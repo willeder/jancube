@@ -36,7 +36,8 @@ export default async function CleaningLogPage({
           <Link
             key={p.key}
             href={`/cleaning/log?period=${p.key}`}
-            className={`rounded-full border px-3 py-1.5 text-sm font-bold ${
+            aria-current={p.key === period ? 'page' : undefined}
+            className={`rounded-xl border-[1.5px] px-3 py-[7px] text-[13.5px] font-bold ${
               p.key === period ? 'border-brand bg-brand text-white' : 'border-line bg-white'
             }`}
           >
@@ -44,7 +45,7 @@ export default async function CleaningLogPage({
           </Link>
         ))}
       </div>
-      <section className="rounded-xl border border-line bg-white p-3">
+      <section className="cleaning-card border-brand bg-brand-pale text-brand-dark">
         <div className="flex items-center justify-between">
           <span className="font-bold">{label}の完了</span>
           <span className="text-2xl font-bold text-brand-dark">{data.counts.total}件</span>
@@ -54,14 +55,14 @@ export default async function CleaningLogPage({
           {data.counts.overdue}件
         </p>
       </section>
-      <h2 className="font-bold">
+      <h1 className="font-bold">
         {label}の清掃ログ({data.store.code})
-      </h2>
+      </h1>
       {data.logs.length === 0 ? (
         <p className="text-sm text-sub">まだ完了した清掃はありません</p>
       ) : (
         [...data.logs].reverse().map((l) => (
-          <div key={l.taskId} className="rounded-xl border border-line bg-white p-3">
+          <div key={l.taskId} className="cleaning-card">
             <div className="flex items-center justify-between">
               <span>
                 <span className="font-bold">{l.roomName}</span>{' '}
@@ -72,7 +73,7 @@ export default async function CleaningLogPage({
                   <span className="ml-1 text-xs font-bold text-alert">期限超過</span>
                 )}
               </span>
-              <span className="text-sm">{time(l.completedAt)}</span>
+              <span className="text-[13px] font-bold text-brand-dark">{time(l.completedAt)}</span>
             </div>
             <div className="mt-1 text-xs text-sub">
               {l.workerName}
@@ -88,7 +89,7 @@ export default async function CleaningLogPage({
           <h2 className="font-bold">活動メモ</h2>
           <ul className="space-y-2">
             {[...memos].reverse().map((m) => (
-              <li key={m.id} className="rounded-xl border border-line bg-white p-3 text-sm">
+              <li key={m.id} className="cleaning-card text-sm">
                 <div className="flex justify-between text-xs text-sub">
                   <span>
                     {m.roomName} ・ 入力: {m.staffName}

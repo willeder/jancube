@@ -2,6 +2,7 @@ import type { PaymentLinkView } from '@jancube/application'
 import { minuteOfBusinessDay, utcToLocal } from '@jancube/domain'
 import type { Metadata } from 'next'
 import { HoldCountdown } from '@/components/HoldCountdown'
+import { ErrorPanel } from '@/components/StoreBar'
 import { dateLabel, hhmm, yen } from '@/lib/format'
 import { withContainer } from '@/server/container'
 import { toUserMessage } from '@/server/errors'
@@ -25,13 +26,7 @@ export default async function PaymentLinkPage({ params }: { params: Promise<{ to
   try {
     view = await withContainer((c) => c.getPaymentLink(token))
   } catch (error) {
-    return (
-      <main className="mx-auto max-w-md px-4 py-10">
-        <p className="rounded-xl border border-alert/40 bg-alert-pale p-4 font-bold text-alert">
-          {toUserMessage(error)}
-        </p>
-      </main>
-    )
+    return <ErrorPanel message={toUserMessage(error)} backHref="/" />
   }
   const b = view.booking
   const start = minuteOfBusinessDay(b.businessDate, b.start, b.timezone)
@@ -39,26 +34,28 @@ export default async function PaymentLinkPage({ params }: { params: Promise<{ to
 
   if (view.state === 'paid') {
     return (
-      <main className="mx-auto max-w-md space-y-4 px-4 py-5">
-        <section className="rounded-xl border border-brand bg-brand-pale p-4">
-          <h1 className="text-lg font-bold">✅ お支払いは完了しています</h1>
+      <main className="customer-content ">
+        <section className="rounded-[14px] border border-brand bg-brand-pale p-3.5">
+          <h1 className="text-base font-bold">✅ お支払いは完了しています</h1>
           <p className="mt-1 text-sm text-sub">予約番号 {b.bookingCode}</p>
         </section>
-        <p className="text-sm text-sub">お部屋番号と入室コードはご利用日の前日にお知らせします</p>
+        <p className="text-sm text-sub">
+          お部屋番号と店舗入口の入室コードは前日20時にお知らせします。当日のご予約は決済後にご案内します
+        </p>
       </main>
     )
   }
 
   const expires = utcToLocal(view.expiresAt, b.timezone)
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-5">
-      <section className="rounded-xl border border-gold bg-gold-pale p-4">
+    <main className="customer-content ">
+      <section className="rounded-[14px] border border-gold bg-gold-pale p-3.5">
         <h1 className="font-bold">📞 お電話でお取りした予約のお支払い</h1>
         <p className="mt-1 text-sm text-sub">
           お支払い期限 {dateLabel(expires.date)} {hhmm(expires.minuteOfDay)}
         </p>
       </section>
-      <section className="rounded-xl border border-line bg-white p-4 text-sm">
+      <section className="rounded-[14px] border border-line bg-white p-3.5 text-sm">
         <dl className="divide-y divide-line">
           <Row label="店舗" value={`${b.storeCode} ${b.storeName}`} />
           <Row label="日時" value={`${dateLabel(b.businessDate)} ${hhmm(start)}-${hhmm(end)}`} />
@@ -70,7 +67,7 @@ export default async function PaymentLinkPage({ params }: { params: Promise<{ to
           {view.issuedByName && <Row label="受付担当" value={view.issuedByName} />}
         </dl>
       </section>
-      <section className="flex items-baseline justify-between rounded-xl border border-line bg-white p-4">
+      <section className="flex items-baseline justify-between rounded-[14px] border border-line bg-white p-3.5">
         <span className="font-bold">お支払い金額(税込)</span>
         <span className="text-2xl font-bold text-brand-dark">{yen(b.total)}</span>
       </section>

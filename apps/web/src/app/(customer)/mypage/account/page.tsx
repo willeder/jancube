@@ -34,7 +34,7 @@ export default async function AccountPage({
   return (
     <>
       <PageHeader backHref="/mypage" title="会員情報" />
-      <main className="mx-auto max-w-md space-y-4 px-4 py-4">
+      <main className="customer-content ">
         {saved && <Notice tone="success">設定を保存しました</Notice>}
         <Card>
           <div className="grid grid-cols-2 gap-3">

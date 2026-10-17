@@ -20,13 +20,13 @@ export default async function LoginPage({
   if (memberId && (await isActiveMember(memberId))) redirect(next)
 
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-6">
+    <main className="customer-content ">
       {withdrawn && (
         <Notice tone="success">退会のお手続きが完了しました。ご利用ありがとうございました</Notice>
       )}
       {loggedOut && <Notice>ログアウトしました</Notice>}
       <div>
-        <h1 className="text-lg font-bold">ログイン</h1>
+        <h1 className="text-base font-bold">ログイン</h1>
         <p className="mt-1 text-sm text-sub">ご登録の携帯電話番号にSMSで認証コードをお送りします</p>
       </div>
       <PhoneForm flow="login" next={next} />

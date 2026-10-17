@@ -6,18 +6,21 @@ export function PageHeader({
   backHref,
   title,
   badge,
+  storeName,
 }: {
   backHref: string
   title: string
   badge?: ReactNode
+  storeName?: string
 }) {
   return (
-    <div className="mx-auto max-w-md px-4 pt-3 print:hidden">
-      <Link href={backHref} className="text-sm font-bold text-brand-dark">
+    <div className="customer-page-header print:hidden">
+      <Link href={backHref} className="text-[13px] font-bold text-brand-dark">
         ‹ 前の画面に戻る
       </Link>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <h1 className="text-lg font-bold">{title}</h1>
+      {storeName && <div className="booking-store mt-3">📍 {storeName}</div>}
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <h1 className="text-base font-bold">{title}</h1>
         {badge}
       </div>
     </div>
@@ -26,7 +29,7 @@ export function PageHeader({
 
 const BADGE_STYLES = {
   confirmed: 'bg-brand-pale text-brand-dark',
-  provisional: 'bg-gold-pale text-ink',
+  provisional: 'bg-gold-pale text-[#8a6d1c]',
   used: 'bg-line/60 text-sub',
   canceled: 'bg-alert-pale text-alert',
 } as const
@@ -43,7 +46,9 @@ export type BadgeKind = keyof typeof BADGE_STYLES
 /** C-12 / C-13 booking status badge. */
 export function StatusBadge({ kind }: { kind: BadgeKind }) {
   return (
-    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${BADGE_STYLES[kind]}`}>
+    <span
+      className={`shrink-0 rounded-full px-2 py-[3px] text-[11px] font-bold ${BADGE_STYLES[kind]}`}
+    >
       {BADGE_LABELS[kind]}
     </span>
   )
@@ -51,7 +56,9 @@ export function StatusBadge({ kind }: { kind: BadgeKind }) {
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-xl border border-line bg-white p-4 text-sm ${className}`}>
+    <section
+      className={`customer-card rounded-[14px] border border-line bg-white p-3.5 text-[12.5px] ${className}`}
+    >
       {children}
     </section>
   )
@@ -68,9 +75,9 @@ export function Row({
 }) {
   const color = accent === 'brand' ? 'text-brand' : accent === 'alert' ? 'text-alert' : ''
   return (
-    <div className="flex justify-between gap-4 py-1.5">
-      <dt className="shrink-0 text-sub">{label}</dt>
-      <dd className={`text-right font-bold ${color}`}>{value}</dd>
+    <div className="flex justify-between gap-3 py-1.5">
+      <dt className="shrink-0 text-xs text-sub">{label}</dt>
+      <dd className={`min-w-0 text-right font-bold ${color}`}>{value}</dd>
     </div>
   )
 }
@@ -85,13 +92,13 @@ export function Notice({
   const styles = {
     info: 'bg-brand-pale text-brand-dark',
     success: 'border border-brand bg-brand-pale text-brand-dark',
-    warn: 'bg-gold-pale text-ink',
+    warn: 'bg-gold-pale text-[#7a6420]',
     alert: 'bg-alert-pale text-alert',
   }
   return (
     <p
       role={tone === 'alert' ? 'alert' : undefined}
-      className={`rounded-lg p-3 text-sm ${styles[tone]}`}
+      className={`rounded-lg px-3 py-2 text-[11.5px] ${styles[tone]}`}
     >
       {children}
     </p>
@@ -99,8 +106,8 @@ export function Notice({
 }
 
 export const buttonPrimary =
-  'block w-full rounded-xl bg-brand py-3 text-center font-bold text-white disabled:opacity-60'
+  'block w-full rounded-xl bg-brand px-3 py-[13px] text-center text-[15px] font-bold text-white disabled:opacity-60'
 export const buttonOutline =
-  'block w-full rounded-xl border border-brand bg-white py-3 text-center font-bold text-brand'
+  'block w-full rounded-xl border-[1.5px] border-brand bg-white px-3 py-[13px] text-center text-[15px] font-bold text-brand-dark'
 export const buttonDanger =
-  'block w-full rounded-xl bg-alert py-3 text-center font-bold text-white disabled:opacity-60'
+  'block w-full rounded-xl bg-alert px-3 py-[13px] text-center text-[15px] font-bold text-white disabled:opacity-60'

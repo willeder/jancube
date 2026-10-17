@@ -23,7 +23,7 @@ export function HoldCountdown({ expiresAt, storeCode }: { expiresAt: string; sto
   const mm = String(Math.floor(total / 60)).padStart(2, '0')
   const ss = String(total % 60).padStart(2, '0')
   return (
-    <p className="rounded-lg bg-gold-pale p-3 text-sm">
+    <p className="hold-countdown rounded-lg bg-gold-pale p-3 text-sm">
       ⏳ 仮押さえ残り{' '}
       <span className="font-bold tabular-nums">
         {mm}:{ss}

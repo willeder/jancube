@@ -67,8 +67,8 @@ export function ProxyBookingForm({ day }: { day: DayAvailability }) {
     minute < (end?.endMinuteOfDay ?? selection.startMinute + 30)
 
   return (
-    <form action={action} className="grid gap-4 xl:grid-cols-[minmax(320px,1fr)_1.6fr]">
-      <section className="space-y-3 rounded-xl border border-line bg-white p-4">
+    <form action={action} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
+      <section className="min-w-0 space-y-3 rounded-[14px] border border-line bg-white p-3.5">
         <h2 className="font-bold">① お客様</h2>
         <Field label="電話番号" hint="会員登録済みの番号なら会員として予約します">
           <div className="flex gap-2">
@@ -130,7 +130,7 @@ export function ProxyBookingForm({ day }: { day: DayAvailability }) {
         </Field>
       </section>
 
-      <section className="space-y-3 rounded-xl border border-line bg-white p-4">
+      <section className="min-w-0 space-y-3 rounded-[14px] border border-line bg-white p-3.5">
         <h2 className="font-bold">
           ② ご予約内容 — {day.store.code} {day.store.name} / {dateLabel(day.date)}
         </h2>
@@ -142,7 +142,10 @@ export function ProxyBookingForm({ day }: { day: DayAvailability }) {
                   部屋タイプ
                 </th>
                 {day.lanes[0]?.slots.map((s) => (
-                  <th key={s.start} className="min-w-7 p-1 text-center font-normal text-sub">
+                  <th
+                    key={s.start}
+                    className="min-w-7 whitespace-nowrap p-1 text-center font-normal text-sub"
+                  >
                     {s.minuteOfDay % 60 === 0 ? hhmm(s.minuteOfDay) : ''}
                   </th>
                 ))}

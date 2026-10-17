@@ -42,13 +42,10 @@ export default async function CleaningLoginPage({
 
   return (
     <>
-      <h1 className="text-lg font-bold">{signedIn ? '担当の選択' : 'ログイン'}</h1>
+      <h1 className="text-base font-bold">{signedIn ? '担当の選択' : 'ログイン'}</h1>
       <p className="text-sm text-sub">清掃担当の方専用の画面です。管理機能は表示されません</p>
       {!signedIn ? (
-        <ActionForm
-          action={cleaningLoginAction}
-          className="space-y-3 rounded-xl border border-line bg-white p-4"
-        >
+        <ActionForm action={cleaningLoginAction} className="space-y-3 cleaning-card">
           <Field label="ID(メールアドレス)">
             <input
               name="email"
@@ -86,7 +83,7 @@ export default async function CleaningLoginPage({
             </button>
           </form>
           {stores.length > 1 && (
-            <form method="get" className="flex gap-2 rounded-xl border border-line bg-white p-4">
+            <form method="get" className="flex gap-2 cleaning-card">
               <select
                 name="store"
                 defaultValue={storeId}
@@ -107,10 +104,7 @@ export default async function CleaningLoginPage({
               </button>
             </form>
           )}
-          <ActionForm
-            action={selectCleaningWorkerAction}
-            className="space-y-3 rounded-xl border border-line bg-white p-4"
-          >
+          <ActionForm action={selectCleaningWorkerAction} className="space-y-3 cleaning-card">
             <input type="hidden" name="storeId" value={storeId} />
             <Field label="担当店舗">
               <input
@@ -139,7 +133,7 @@ export default async function CleaningLoginPage({
         </>
       )}
       <Notice>
-        清掃ロールは清掃完了入力のみ可能です(F-CLN-03)。予約情報・お客様情報は表示しません
+        清掃ロールは清掃完了入力と活動メモの記録ができます。予約情報・お客様情報は表示しません
       </Notice>
     </>
   )

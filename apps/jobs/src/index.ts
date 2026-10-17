@@ -6,6 +6,10 @@ import { jobsConfig, withJobs } from './container'
  */
 export default {
   async scheduled(controller, env, ctx) {
+    if (String(env.BETA_SETUP_MODE) === '1' || !env.HYPERDRIVE) {
+      console.info(JSON.stringify({ event: 'jobs_paused', reason: 'beta_setup_required' }))
+      return
+    }
     const config = jobsConfig(env as unknown as Record<string, unknown>)
     const run = withJobs(env.HYPERDRIVE.connectionString, config, async (jobs) => {
       switch (controller.cron) {

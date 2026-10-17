@@ -11,8 +11,8 @@ export default async function SetPasswordPage({
   if (!token) notFound()
   const invite = purpose === 'invite'
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-4 rounded-xl border border-line bg-white p-6">
+    <main className="admin-auth-page flex min-h-screen items-center justify-center px-4 py-6">
+      <div className="w-full max-w-[420px] space-y-3 rounded-[14px] border border-line bg-white p-3.5">
         <h1 className="font-bold">{invite ? 'アカウントのパスワード設定' : 'パスワード再設定'}</h1>
         <SetPasswordForm token={token} purpose={invite ? 'invite' : 'password_reset'} />
       </div>

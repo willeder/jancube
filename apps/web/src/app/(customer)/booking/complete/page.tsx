@@ -1,6 +1,7 @@
 import { minuteOfBusinessDay } from '@jancube/domain'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { BookingFlow } from '@/components/BookingFlow'
 import { ErrorPanel } from '@/components/StoreBar'
 import { dateLabel, hhmm, yen } from '@/lib/format'
 import { withContainer } from '@/server/container'
@@ -52,15 +53,17 @@ export default async function CompletePage({
   const start = minuteOfBusinessDay(booking.businessDate, booking.start, booking.timezone)
   const end = minuteOfBusinessDay(booking.businessDate, booking.end, booking.timezone)
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-5">
-      <section className="rounded-xl border border-brand bg-brand-pale p-4">
-        <h1 className="text-lg font-bold">✅ ご予約が完了しました</h1>
+    <BookingFlow step={7}>
+      <section className="rounded-[14px] border border-brand bg-brand-pale p-3.5">
+        <h1 className="text-base font-bold text-brand-dark">✅ ご予約が完了しました</h1>
         <p className="mt-1 text-sm text-sub">予約番号 {booking.bookingCode}</p>
       </section>
 
-      <section className="rounded-xl border border-brand bg-brand-pale p-4 text-sm">
+      <section className="rounded-[14px] border border-brand bg-brand-pale p-3.5 text-sm">
         <h2 className="font-bold text-brand-dark">🔑 お部屋番号と入室コードのお知らせ</h2>
-        <p className="mt-1">ご利用日の前日にお知らせします</p>
+        <p className="mt-1">
+          ご利用日の前日20時にお知らせします。通知時刻以降・当日のご予約は、お支払い完了後にお知らせします
+        </p>
         <ul className="mt-1 list-inside list-disc text-sub">
           <li>お部屋番号とお部屋タイプ</li>
           <li>店舗入口の入室コード</li>
@@ -68,7 +71,7 @@ export default async function CompletePage({
         </ul>
       </section>
 
-      <section className="rounded-xl border border-line bg-white p-4 text-sm">
+      <section className="booking-card text-sm">
         <dl className="divide-y divide-line">
           <Row label="店舗" value={`${booking.storeCode} ${booking.storeName}`} />
           <Row
@@ -80,7 +83,7 @@ export default async function CompletePage({
             value={
               booking.requestedRoomName
                 ? `${booking.roomGroupName} / ${booking.requestedRoomName}`
-                : `${booking.roomGroupName}（部屋番号は前日にお知らせ）`
+                : `${booking.roomGroupName}（部屋番号は前日20時に確定。当日予約は決済後にお知らせ）`
             }
           />
           <Row label="ご利用人数" value={`${booking.guestCount}名`} />
@@ -95,13 +98,25 @@ export default async function CompletePage({
         </dl>
       </section>
 
+      <section className="rounded-[14px] border border-gold bg-gold-pale p-3.5 text-sm">
+        <h2 className="font-bold text-brand-dark">📩 ご予約のお知らせ</h2>
+        <p className="mt-1 text-sub">
+          通知は設定した受信方法でお届けします。LINEで受け取る場合は、マイページで連携・受信設定をご確認ください。
+        </p>
+        <Link
+          href="/mypage/account"
+          className="mt-2 block rounded-lg bg-brand px-3 py-[7px] text-center font-bold text-white"
+        >
+          連携・受信設定を確認
+        </Link>
+      </section>
       <Link
-        href="/"
+        href={`/mypage/bookings/${booking.bookingCode}`}
         className="block w-full rounded-xl border border-brand py-3 text-center font-bold text-brand"
       >
-        トップへ戻る
+        マイページで予約を確認
       </Link>
-    </main>
+    </BookingFlow>
   )
 }
 

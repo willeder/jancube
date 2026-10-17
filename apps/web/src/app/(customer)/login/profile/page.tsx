@@ -27,9 +27,9 @@ export default async function LoginProfilePage({
   if (!canRegister) redirect(paths.start)
 
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-6">
+    <main className="customer-content ">
       <div>
-        <h1 className="text-lg font-bold">お客様情報の入力</h1>
+        <h1 className="text-base font-bold">お客様情報の入力</h1>
         <p className="mt-1 text-sm text-sub">お名前（本名でのご登録をお願いしています）</p>
       </div>
       <ProfileForm flow="login" next={paths.next} />

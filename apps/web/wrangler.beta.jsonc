@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jancube-web-beta",
+  "account_id": "2237a997c55be463e38cb352e6a6b0ee",
+  "main": "worker.beta.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS", "run_worker_first": true },
+  "observability": { "enabled": true },
+  // Add the real HYPERDRIVE binding after TiDB is provisioned. No fabricated resource ID.
+  "vars": {
+    "APP_ENV": "staging",
+    "APP_URL": "https://jancube-web-beta.rokad.workers.dev",
+    "EMAIL_FROM": "Jancube beta <no-reply@jancube.invalid>",
+    "BETA_SETUP_MODE": "1",
+    "MAINTENANCE_MODE": "1",
+    "MAINTENANCE_MESSAGE": "ベータ版の環境設定中です。予約受付はまだ開始していません。"
+  }
+}

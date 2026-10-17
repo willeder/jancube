@@ -11,9 +11,9 @@ export default async function LiffLinkDonePage({
 }) {
   const next = safeNext((await searchParams).next)
   return (
-    <main className="mx-auto max-w-md space-y-4 px-4 py-6">
+    <main className="customer-content ">
       <div>
-        <h1 className="text-lg font-bold">LINE連携が完了しました</h1>
+        <h1 className="text-base font-bold">LINE連携が完了しました</h1>
         <p className="mt-1 text-sm text-sub">
           次回からはLINEでログインしてご利用いただけます。
           お知らせの受取方法はマイページのアカウント設定で確認・変更できます

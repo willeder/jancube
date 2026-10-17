@@ -32,7 +32,7 @@ export default async function CancelPage({ params }: { params: Promise<{ code: s
   return (
     <>
       <PageHeader backHref={back} title="予約のキャンセル" />
-      <main className="mx-auto max-w-md space-y-4 px-4 py-4">
+      <main className="customer-content ">
         <p className="text-sm text-sub">キャンセル料は開始までの残り時間で決まります</p>
         <Card>
           <p className="font-bold">{bookingWhen(b)}</p>

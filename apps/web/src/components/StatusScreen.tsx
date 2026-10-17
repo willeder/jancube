@@ -14,22 +14,21 @@ export function StatusScreen({
   action?: { href: string; label: string }
 }) {
   return (
-    <main className="mx-auto max-w-md px-4 py-10">
-      <section className="rounded-xl border border-line bg-white p-6 text-center">
-        <div aria-hidden className="text-4xl">
-          {icon}
-        </div>
-        <h1 className="mt-3 text-lg font-bold">{title}</h1>
-        {children && <div className="mt-2 text-sm text-sub">{children}</div>}
+    <main className="customer-content">
+      <section className="rounded-[14px] border border-alert/30 bg-alert-pale p-3.5">
+        <h1 className="font-bold text-alert">
+          <span aria-hidden>{icon}</span> {title}
+        </h1>
+        {children && <div className="mt-1.5 text-xs text-sub">{children}</div>}
+        {action && (
+          <Link
+            href={action.href}
+            className="mt-2 block w-full rounded-[9px] border-[1.5px] border-brand bg-white px-3.5 py-[7px] text-center text-[13px] font-bold text-brand-dark"
+          >
+            {action.label}
+          </Link>
+        )}
       </section>
-      {action && (
-        <Link
-          href={action.href}
-          className="mt-5 block w-full rounded-xl bg-brand py-3 text-center font-bold text-white"
-        >
-          {action.label}
-        </Link>
-      )}
     </main>
   )
 }

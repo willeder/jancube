@@ -28,10 +28,11 @@ export default async function MyPage() {
   const receiptFor = past.find((b) => b.badge === 'used')
 
   return (
-    <main className="mx-auto max-w-md space-y-5 px-4 py-5">
-      <section className="rounded-xl border border-brand bg-brand-pale p-4">
+    <main className="customer-content ">
+      <h1 className="sr-only">マイページ</h1>
+      <section className="rounded-[14px] border border-brand bg-brand-pale p-3.5">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-lg font-bold">
+          <p className="text-[15px] font-bold text-brand-dark">
             {account.familyName} {account.givenName} 様
           </p>
           {account.line && <span className="text-xs font-bold text-brand-dark">LINE連携済</span>}
@@ -43,9 +44,9 @@ export default async function MyPage() {
       </section>
 
       <section>
-        <h2 className="mb-2 font-bold">今後の予約</h2>
+        <h2 className="mb-3 text-base font-bold">今後の予約</h2>
         {upcoming.length === 0 ? (
-          <p className="rounded-xl border border-line bg-white p-4 text-sm text-sub">
+          <p className="rounded-[14px] border border-line bg-white p-3.5 text-sm text-sub">
             今後のご予約はありません。
             <Link href="/" className="font-bold text-brand-dark underline">
               予約する
@@ -62,7 +63,7 @@ export default async function MyPage() {
 
       {past.length > 0 && (
         <section>
-          <h2 className="mb-2 font-bold">過去の予約</h2>
+          <h2 className="mb-3 text-base font-bold">過去の予約</h2>
           <ul className="space-y-3">
             {past.map((b) => (
               <BookingCard key={b.bookingCode} booking={b} />
@@ -102,22 +103,24 @@ function BookingCard({ booking: b }: { booking: MyBookingItem }) {
   const upcoming = b.badge === 'confirmed' || b.badge === 'provisional'
   const room = b.displayRoom ? `${b.roomGroupName} ${b.displayRoom}` : b.roomGroupName
   return (
-    <li className="rounded-xl border border-line bg-white p-4 text-sm">
+    <li className="rounded-[14px] border border-line bg-white p-3.5 text-sm">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-bold">{bookingWhen(b)}</span>
+        <span className="text-[13px] font-bold">{bookingWhen(b)}</span>
         <StatusBadge kind={b.badge} />
       </div>
-      <p className="mt-1 text-sub">
+      <p className="mt-1.5 text-xs text-sub">
         {b.storeCode} {b.storeName} / {room} / {yen(b.total)}
       </p>
       <div className="mt-2 flex items-end justify-between gap-3">
         <p className="text-xs text-sub">
           {upcoming &&
-            (b.badge === 'provisional' ? '部屋は前日に確定' : '入室コードは前日にお知らせ')}
+            (b.badge === 'provisional'
+              ? '部屋番号は前日20時に確定。当日予約は決済後にお知らせ'
+              : '入室コードは前日20時にお知らせ。当日予約は決済後にご案内')}
         </p>
         <Link
           href={bookingPath(b.bookingCode)}
-          className="shrink-0 rounded-lg border border-brand px-3 py-1.5 font-bold text-brand-dark"
+          className="shrink-0 rounded-[9px] border-[1.5px] border-brand px-3.5 py-[7px] font-bold text-brand-dark"
         >
           予約詳細
         </Link>
@@ -130,7 +133,7 @@ function NavButton({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="rounded-xl border border-brand bg-white py-2 text-center font-bold text-brand-dark"
+      className="rounded-[9px] border-[1.5px] border-brand bg-white px-1 py-[7px] text-center text-[13px] font-bold text-brand-dark"
     >
       {label}
     </Link>

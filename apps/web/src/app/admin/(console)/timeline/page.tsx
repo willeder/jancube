@@ -9,7 +9,8 @@ import { toUserMessage } from '@/server/errors'
 
 export const dynamic = 'force-dynamic'
 
-const SLOT_PX = 28
+const SLOT_PX = 30
+const LABEL_PX = 96
 
 const itemClass: Record<TimelineItem['kind'], string> = {
   booking: 'border border-brand bg-brand-pale text-brand-dark',
@@ -110,9 +111,9 @@ export default async function TimelinePage({
       )}
 
       <div className="overflow-x-auto rounded-xl border border-line bg-white">
-        <div style={{ width: width + 136 }}>
+        <div style={{ width: width + LABEL_PX }}>
           <div className="flex border-b border-line bg-paper text-[10px] text-sub">
-            <div className="w-34 shrink-0 px-2 py-1">部屋 / 時刻</div>
+            <div className="w-24 shrink-0 px-1.5 py-1">部屋 / 時刻</div>
             <div className="relative h-6" style={{ width }}>
               {slots
                 .filter((m) => m % 60 === 0)
@@ -132,7 +133,7 @@ export default async function TimelinePage({
               key={row.key}
               className={`flex border-b border-line last:border-b-0 ${row.inactive ? 'bg-paper' : ''}`}
             >
-              <div className="w-34 shrink-0 px-2 py-1">
+              <div className="w-24 shrink-0 px-1.5 py-1">
                 <div
                   className={`text-xs font-bold ${row.inactive ? 'text-sub' : ''} ${
                     row.unassigned ? 'text-alert' : ''
@@ -148,7 +149,7 @@ export default async function TimelinePage({
                 <div className="text-[10px] text-sub">{row.sub}</div>
               </div>
               <div
-                className={`relative h-10 ${row.inactive ? 'bg-line/60' : ''}`}
+                className={`relative min-h-11 self-stretch ${row.inactive ? 'bg-line/60' : ''}`}
                 style={{
                   width,
                   backgroundImage: `repeating-linear-gradient(to right, transparent 0 ${SLOT_PX - 1}px, var(--color-line) ${SLOT_PX - 1}px ${SLOT_PX}px)`,
@@ -191,9 +192,7 @@ export default async function TimelinePage({
       <UnassignedLinks rows={view.rows} />
       <div className="mt-4">
         <Notice>
-          【課題#26 未決】タイムラインから直接の割当変更（クリック /
-          ドラッグ）は操作方法が未確定のため、
-          予約詳細(A-05)または上の未割当一覧から割当変更(A-07)へ進みます
+          予約を選ぶと詳細が開きます。部屋の割当変更は予約詳細または未割当一覧から行ってください。
         </Notice>
       </div>
     </>
