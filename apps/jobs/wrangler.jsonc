@@ -14,6 +14,7 @@
   },
   "vars": {
     "APP_ENV": "development",
+    "BETA_SETUP_MODE": "0",
     "APP_URL": "http://localhost:3010",
     "EMAIL_FROM": "雀CUBE <no-reply@jancube.net>"
   },
